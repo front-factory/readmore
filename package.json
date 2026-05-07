@@ -4,14 +4,15 @@
     "description": "",
     "type": "module",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "prepare": "husky"
     },
     "engines": {
         "node": ">=20"
     },
     "devDependencies": {
-    },
-    "dependencies": {
+        "@commitlint/cli": "^20.5.3",
+        "@commitlint/config-conventional": "^20.5.3",
+        "husky": "^9.1.7"
     },
     "keywords": [
         "readmore",
