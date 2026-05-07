@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main", "develop", "beta" ]
+  pull_request:
+    branches: [ "main", "develop", "beta" ]
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta' }}
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts --no-audit
+
+      - name: Release
+        run: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

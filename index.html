@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>ReadMore demo</title>
+    <link rel="stylesheet" href="src/readmore.css"/>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 640px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .readmore-btn {
+            display: inline-block;
+            margin-top: 0.25rem;
+            padding: 0;
+            background: none;
+            border: 0;
+            color: #1a73e8;
+            cursor: pointer;
+            font: inherit;
+            text-decoration: underline;
+        }
+
+        .readmore-btn:hover, .readmore-btn:focus {
+            color: #0c47a1;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+<h1>ReadMore plugin</h1>
+
+<div class="card">
+    <h2>2 lines</h2>
+    <p class="excerpt-2">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </p>
+</div>
+
+<div class="card">
+    <h2>4 lines</h2>
+    <p class="excerpt-4">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur
+        sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+        est laborum.
+    </p>
+</div>
+
+<div class="card">
+    <h2>Short text (no button)</h2>
+    <p class="excerpt-2">Text is too short to be truncated.</p>
+</div>
+
+<script type="module">
+    import { ReadMore } from '/src/readmore.ts';
+
+    ReadMore.init('.excerpt-2', { lines: 2 });
+    ReadMore.init('.excerpt-4', { lines: 4 });
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+.readmore-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    -webkit-line-clamp: var(--readmore-lines, 3);
+    line-clamp: var(--readmore-lines, 3);
+}
