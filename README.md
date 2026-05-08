@@ -14,6 +14,18 @@ button.
 npm install @frontfactory/readmore
 ```
 
+## Playground
+
+Try it live on StackBlitz — no installation required:
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/~/github.com/front-factory/readmore)
+
+Or run it locally:
+
+```shell
+npm run dev
+```
+
 ## Usage
 
 ```ts
