@@ -5,6 +5,8 @@ export interface ReadMoreOptions {
     lessText?: string;
     buttonClass?: string;
     expandedClass?: string;
+    openingClass?: string;
+    closingClass?: string;
 }
 
 type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height'>> & { height?: number };
@@ -17,7 +19,9 @@ const DEFAULTS: ResolvedOptions = {
     moreText: 'Read more',
     lessText: 'Read less',
     buttonClass: 'readmore-btn',
-    expandedClass: 'is-expanded'
+    expandedClass: 'is-expanded',
+    openingClass: 'is-opening',
+    closingClass: 'is-closing'
 };
 
 export class ReadMore {
@@ -65,20 +69,30 @@ export class ReadMore {
                 ? this.options.lessText
                 : this.options.moreText;
         }
+        const stateClass = this.#expanded ? this.options.openingClass : this.options.closingClass;
+        const otherClass = this.#expanded ? this.options.closingClass : this.options.openingClass;
+        this.el.classList.remove(otherClass);
+        this.#applyTransientClass(stateClass);
         if (!this.#expanded) this.#refresh();
     }
 
     destroy(): void {
         window.removeEventListener('resize', this.#onResize);
         this.#unmountButton();
-        this.el.classList.remove(CLAMP_CLASS, CLAMP_HEIGHT_CLASS, this.options.expandedClass);
+        this.el.classList.remove(
+            CLAMP_CLASS,
+            CLAMP_HEIGHT_CLASS,
+            this.options.expandedClass,
+            this.options.openingClass,
+            this.options.closingClass
+        );
         this.el.style.removeProperty('--readmore-lines');
         this.el.style.removeProperty('--readmore-height');
     }
 
     #init(): void {
         if (this.options.height != null) {
-            this.el.style.setProperty('--readmore-height', `${this.options.height}px`);
+            this.el.style.setProperty('--readmore-height', `${ this.options.height }px`);
             this.el.classList.add(CLAMP_CLASS, CLAMP_HEIGHT_CLASS);
         } else {
             this.el.style.setProperty('--readmore-lines', String(this.options.lines));
@@ -100,6 +114,25 @@ export class ReadMore {
         } else if (!overflowing && this.#button) {
             this.#unmountButton();
         }
+    }
+
+    #applyTransientClass(stateClass: string): void {
+        this.el.classList.add(stateClass);
+        const remove = (): void => this.el.classList.remove(stateClass);
+        const duration = getComputedStyle(this.el).transitionDuration;
+        const hasTransition = duration
+            .split(',')
+            .some((d) => parseFloat(d) > 0);
+        if (!hasTransition) {
+            setTimeout(remove, 0);
+            return;
+        }
+        const onEnd = (e: TransitionEvent): void => {
+            if (e.target !== this.el) return;
+            this.el.removeEventListener('transitionend', onEnd);
+            remove();
+        };
+        this.el.addEventListener('transitionend', onEnd);
     }
 
     #mountButton(): void {

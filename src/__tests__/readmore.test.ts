@@ -208,6 +208,116 @@ describe('ReadMore - destroy()', () => {
     });
 });
 
+describe('ReadMore - transient state classes', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+        vi.useRealTimers();
+    });
+
+    it('applies default opening/closing class names', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        expect(rm.options.openingClass).toBe('is-opening');
+        expect(rm.options.closingClass).toBe('is-closing');
+    });
+
+    it('merges custom opening/closing class names', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el, {
+            openingClass: 'opening',
+            closingClass: 'closing'
+        });
+        expect(rm.options.openingClass).toBe('opening');
+        expect(rm.options.closingClass).toBe('closing');
+    });
+
+    it('adds is-opening on expand and removes it after the fallback timeout', async () => {
+        vi.useFakeTimers();
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        rm.toggle();
+        expect(el.classList.contains('is-opening')).toBe(true);
+        expect(el.classList.contains('is-closing')).toBe(false);
+        vi.runAllTimers();
+        expect(el.classList.contains('is-opening')).toBe(false);
+    });
+
+    it('adds is-closing on collapse and removes it after the fallback timeout', async () => {
+        vi.useFakeTimers();
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        rm.toggle(); // expand
+        vi.runAllTimers();
+        rm.toggle(); // collapse
+        expect(el.classList.contains('is-closing')).toBe(true);
+        expect(el.classList.contains('is-opening')).toBe(false);
+        vi.runAllTimers();
+        expect(el.classList.contains('is-closing')).toBe(false);
+    });
+
+    it('removes the opposite transient class when toggling rapidly', () => {
+        vi.useFakeTimers();
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        rm.toggle(); // expand -> is-opening
+        expect(el.classList.contains('is-opening')).toBe(true);
+        rm.toggle(); // collapse -> should remove is-opening, add is-closing
+        expect(el.classList.contains('is-opening')).toBe(false);
+        expect(el.classList.contains('is-closing')).toBe(true);
+    });
+
+    it('removes the transient class via transitionend when a transition is set', () => {
+        const el = makeEl(true);
+        // Simulate a non-zero transition duration via the prototype getter.
+        const original = Object.getOwnPropertyDescriptor(
+            window,
+            'getComputedStyle'
+        );
+        const spy = vi.spyOn(window, 'getComputedStyle').mockImplementation(
+            ((elt: Element) => {
+                const proxy = { transitionDuration: '0.3s' } as unknown as CSSStyleDeclaration;
+                return new Proxy(proxy, {
+                    get(target, prop) {
+                        if (prop in target) return (target as unknown as Record<string | symbol, unknown>)[prop as string];
+                        return '';
+                    }
+                });
+            }) as typeof window.getComputedStyle
+        );
+        const rm = new ReadMore(el);
+        rm.toggle();
+        expect(el.classList.contains('is-opening')).toBe(true);
+        el.dispatchEvent(new Event('transitionend'));
+        expect(el.classList.contains('is-opening')).toBe(false);
+        spy.mockRestore();
+        if (original) Object.defineProperty(window, 'getComputedStyle', original);
+    });
+
+    it('uses custom class names when provided', () => {
+        vi.useFakeTimers();
+        const el = makeEl(true);
+        const rm = new ReadMore(el, { openingClass: 'opening', closingClass: 'closing' });
+        rm.toggle();
+        expect(el.classList.contains('opening')).toBe(true);
+        vi.runAllTimers();
+        expect(el.classList.contains('opening')).toBe(false);
+        rm.toggle();
+        expect(el.classList.contains('closing')).toBe(true);
+        vi.runAllTimers();
+        expect(el.classList.contains('closing')).toBe(false);
+    });
+
+    it('destroy() removes lingering transient classes', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        rm.toggle();
+        expect(el.classList.contains('is-opening')).toBe(true);
+        rm.destroy();
+        expect(el.classList.contains('is-opening')).toBe(false);
+        expect(el.classList.contains('is-closing')).toBe(false);
+    });
+});
+
 describe('ReadMore.init - static', () => {
     afterEach(() => {
         document.body.innerHTML = '';

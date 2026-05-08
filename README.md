@@ -67,6 +67,8 @@ if (el) new ReadMore(el, {
 | `lessText`      | `string` | `'Read less'`    | Label of the button when the text is expanded.                     |
 | `buttonClass`   | `string` | `'readmore-btn'` | Class applied to the toggle button.                                |
 | `expandedClass` | `string` | `'is-expanded'`  | Class applied to the target element while expanded.                |
+| `openingClass`  | `string` | `'is-opening'`   | Transient class applied while expanding, removed after transition. |
+| `closingClass`  | `string` | `'is-closing'`   | Transient class applied while collapsing, removed after transition.|
 
 ## API
 
@@ -87,3 +89,20 @@ it sets `--readmore-lines` and the bundled stylesheet applies `-webkit-line-clam
 the last visible line. In **height mode** (`height` option), it sets `--readmore-height` and applies `max-height` via
 the `.readmore-clamp--height` modifier class instead. The toggle button is mounted right after the element only when the
 content actually overflows, and unmounted again on resize if the text ends up fitting.
+
+### Transient classes for animations
+
+In addition to `expandedClass` (which stays applied for the entire expanded state), the plugin applies short-lived
+`openingClass` and `closingClass` markers on the target element at the moment of expand and collapse respectively.
+Each is added when the toggle starts and removed automatically once the CSS transition on the element ends — or on the
+next tick if no transition is declared. Use them as hooks to drive enter/leave animations:
+
+```css
+.is-opening { 
+    /* expand animation */
+}
+
+.is-closing {
+    /* collapse animation */ 
+}
+```
