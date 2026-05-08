@@ -58,6 +58,7 @@
         "url": "git+https://github.com/front-factory/readmore.git"
     },
     "publishConfig": {
-        "access": "public"
+        "access": "public",
+        "provenance": true
     }
 }
