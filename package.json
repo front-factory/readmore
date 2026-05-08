@@ -8,7 +8,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
-        "prepare": "husky",
+        "prepare": "husky && npm run build",
         "release": "semantic-release"
     },
     "engines": {
