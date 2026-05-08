@@ -1,4 +1,8 @@
-# @frontfactory/readmore
+# Readmore JS
+
+[![Version](https://flat.badgen.net/npm/v/@frontfactory/readmore)](https://www.npmjs.com/package/@frontfactory/readmore)
+[![Downloads](https://flat.badgen.net/npm/dt/@frontfactory/readmore)](https://www.npmjs.com/package/@frontfactory/readmore)
+[![License](https://flat.badgen.net/npm/license/@frontfactory/readmore)](https://www.npmjs.com/package/@frontfactory/readmore)
 
 Lightweight, framework-agnostic plugin to clamp text to N lines with an ellipsis and a `Read more` / `Read less` toggle
 button.
