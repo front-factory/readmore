@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { transform as lightningcssTransform } from 'lightningcss';
 
 export default defineConfig({
     build: {
@@ -11,6 +12,7 @@ export default defineConfig({
                 'es'
             ]
         },
+        minify: true,
         sourcemap: true,
         emptyOutDir: true
     },
@@ -27,6 +29,18 @@ export default defineConfig({
                 dest: '.',
                 rename: {
                     stripBase: true
+                },
+                transform: {
+                    encoding: 'buffer',
+                    handler: (content, filename) => {
+                        const { code } = lightningcssTransform({
+                            filename,
+                            code: content,
+                            minify: true
+                        });
+
+                        return Buffer.from(code);
+                    }
                 }
             }]
         })
