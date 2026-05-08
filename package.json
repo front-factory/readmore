@@ -8,6 +8,9 @@
         "build": "vite build",
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
         "prepare": "husky && npm run build",
         "release": "semantic-release"
     },
@@ -31,13 +34,16 @@
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/git": "^10.0.1",
         "@semantic-release/github": "^12.0.6",
+        "@vitest/coverage-v8": "^4.1.5",
         "conventional-changelog-conventionalcommits": "^9.3.1",
         "husky": "^9.1.7",
+        "jsdom": "^29.1.1",
         "semantic-release": "^25.0.3",
         "typescript": "^5.4.0",
         "vite": "^8.0.11",
         "vite-plugin-dts": "^5.0.0",
-        "vite-plugin-static-copy": "^4.1.0"
+        "vite-plugin-static-copy": "^4.1.0",
+        "vitest": "^4.1.5"
     },
     "files": [
         "dist"

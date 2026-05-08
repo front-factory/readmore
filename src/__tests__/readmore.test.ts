@@ -1,0 +1,297 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ReadMore } from '../readmore';
+
+/**
+ * jsdom always reports scrollHeight/clientHeight as 0. We override the
+ * getters per element so we can simulate overflow on demand.
+ */
+function setOverflow(el: HTMLElement, overflowing: boolean): void {
+    Object.defineProperty(el, 'scrollHeight', {
+        configurable: true,
+        get: () => (overflowing ? 200 : 50)
+    });
+    Object.defineProperty(el, 'clientHeight', {
+        configurable: true,
+        get: () => 50
+    });
+}
+
+function makeEl(overflowing = false): HTMLElement {
+    const el = document.createElement('div');
+    el.textContent = 'Some long content that may overflow';
+    document.body.appendChild(el);
+    setOverflow(el, overflowing);
+    return el;
+}
+
+describe('ReadMore - constructor', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    it('throws TypeError when not given an HTMLElement', () => {
+        expect(() => new ReadMore(null as unknown as HTMLElement)).toThrow(TypeError);
+        expect(() => new ReadMore({} as HTMLElement)).toThrow(TypeError);
+        expect(() => new ReadMore('div' as unknown as HTMLElement)).toThrow(TypeError);
+    });
+
+    it('applies default options when none are provided', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        expect(rm.options.lines).toBe(3);
+        expect(rm.options.moreText).toBe('Read more');
+        expect(rm.options.lessText).toBe('Read less');
+        expect(rm.options.buttonClass).toBe('readmore-btn');
+        expect(rm.options.expandedClass).toBe('is-expanded');
+        expect(rm.options.height).toBeUndefined();
+    });
+
+    it('merges custom options over defaults', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el, {
+            lines: 5,
+            moreText: 'Plus',
+            lessText: 'Moins',
+            buttonClass: 'my-btn',
+            expandedClass: 'open'
+        });
+        expect(rm.options.lines).toBe(5);
+        expect(rm.options.moreText).toBe('Plus');
+        expect(rm.options.lessText).toBe('Moins');
+        expect(rm.options.buttonClass).toBe('my-btn');
+        expect(rm.options.expandedClass).toBe('open');
+    });
+
+    it('exposes the element on the instance', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        expect(rm.el).toBe(el);
+        expect(rm.expanded).toBe(false);
+    });
+});
+
+describe('ReadMore - lines mode', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    it('sets --readmore-lines and adds the clamp class', () => {
+        const el = makeEl();
+        new ReadMore(el, { lines: 4 });
+        expect(el.style.getPropertyValue('--readmore-lines')).toBe('4');
+        expect(el.classList.contains('readmore-clamp')).toBe(true);
+        expect(el.classList.contains('readmore-clamp--height')).toBe(false);
+        expect(el.style.getPropertyValue('--readmore-height')).toBe('');
+    });
+
+    it('uses default lines value when not specified', () => {
+        const el = makeEl();
+        new ReadMore(el);
+        expect(el.style.getPropertyValue('--readmore-lines')).toBe('3');
+    });
+});
+
+describe('ReadMore - height mode', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    it('sets --readmore-height and adds both clamp classes', () => {
+        const el = makeEl();
+        new ReadMore(el, { height: 120 });
+        expect(el.style.getPropertyValue('--readmore-height')).toBe('120px');
+        expect(el.classList.contains('readmore-clamp')).toBe(true);
+        expect(el.classList.contains('readmore-clamp--height')).toBe(true);
+    });
+
+    it('does not set --readmore-lines in height mode', () => {
+        const el = makeEl();
+        new ReadMore(el, { height: 80 });
+        expect(el.style.getPropertyValue('--readmore-lines')).toBe('');
+    });
+});
+
+describe('ReadMore - toggle()', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    it('expands and collapses, flipping classes', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        expect(rm.expanded).toBe(false);
+        expect(el.classList.contains('readmore-clamp')).toBe(true);
+        expect(el.classList.contains('is-expanded')).toBe(false);
+
+        rm.toggle();
+        expect(rm.expanded).toBe(true);
+        expect(el.classList.contains('readmore-clamp')).toBe(false);
+        expect(el.classList.contains('is-expanded')).toBe(true);
+
+        rm.toggle();
+        expect(rm.expanded).toBe(false);
+        expect(el.classList.contains('readmore-clamp')).toBe(true);
+        expect(el.classList.contains('is-expanded')).toBe(false);
+    });
+
+    it('toggles the height clamp class only in height mode', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, { height: 100 });
+        expect(el.classList.contains('readmore-clamp--height')).toBe(true);
+        rm.toggle();
+        expect(el.classList.contains('readmore-clamp--height')).toBe(false);
+        rm.toggle();
+        expect(el.classList.contains('readmore-clamp--height')).toBe(true);
+    });
+
+    it('updates the button text on toggle', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, { moreText: 'More', lessText: 'Less' });
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        expect(btn).toBeInstanceOf(HTMLButtonElement);
+        expect(btn.textContent).toBe('More');
+
+        rm.toggle();
+        expect(btn.textContent).toBe('Less');
+
+        rm.toggle();
+        expect(btn.textContent).toBe('More');
+    });
+
+    it('toggles when clicking the button', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        btn.click();
+        expect(rm.expanded).toBe(true);
+        btn.click();
+        expect(rm.expanded).toBe(false);
+    });
+});
+
+describe('ReadMore - destroy()', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+        vi.restoreAllMocks();
+    });
+
+    it('removes classes and CSS variables', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, { height: 100 });
+        rm.toggle();
+        rm.destroy();
+        expect(el.classList.contains('readmore-clamp')).toBe(false);
+        expect(el.classList.contains('readmore-clamp--height')).toBe(false);
+        expect(el.classList.contains('is-expanded')).toBe(false);
+        expect(el.style.getPropertyValue('--readmore-lines')).toBe('');
+        expect(el.style.getPropertyValue('--readmore-height')).toBe('');
+    });
+
+    it('removes the button from the DOM', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        expect(el.nextElementSibling).not.toBeNull();
+        rm.destroy();
+        expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('removes the resize listener', () => {
+        const removeSpy = vi.spyOn(window, 'removeEventListener');
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        rm.destroy();
+        const calledForResize = removeSpy.mock.calls.some(
+            ([type]) => type === 'resize'
+        );
+        expect(calledForResize).toBe(true);
+    });
+});
+
+describe('ReadMore.init - static', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    it('returns a ReadMore array from a CSS selector', () => {
+        const a = makeEl();
+        const b = makeEl();
+        a.classList.add('rm');
+        b.classList.add('rm');
+        const result = ReadMore.init('.rm');
+        expect(Array.isArray(result)).toBe(true);
+        expect(result).toHaveLength(2);
+        expect(result[0]).toBeInstanceOf(ReadMore);
+        expect(result[1]).toBeInstanceOf(ReadMore);
+    });
+
+    it('accepts an array of HTMLElements', () => {
+        const a = makeEl();
+        const b = makeEl();
+        const result = ReadMore.init([a, b], { lines: 2 });
+        expect(result).toHaveLength(2);
+        expect(result[0].options.lines).toBe(2);
+    });
+
+    it('accepts a NodeList', () => {
+        const a = makeEl();
+        a.classList.add('rm-nl');
+        const nodes = document.querySelectorAll<HTMLElement>('.rm-nl');
+        const result = ReadMore.init(nodes);
+        expect(result).toHaveLength(1);
+    });
+
+    it('returns an empty array when nothing matches', () => {
+        const result = ReadMore.init('.does-not-exist');
+        expect(result).toEqual([]);
+    });
+});
+
+describe('ReadMore - button mounting based on overflow', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    it('does not mount the button when content does not overflow', () => {
+        const el = makeEl(false);
+        new ReadMore(el);
+        expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('mounts the button when content overflows', () => {
+        const el = makeEl(true);
+        new ReadMore(el);
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        expect(btn).toBeInstanceOf(HTMLButtonElement);
+        expect(btn.type).toBe('button');
+        expect(btn.className).toBe('readmore-btn');
+        expect(btn.textContent).toBe('Read more');
+    });
+
+    it('uses the configured buttonClass', () => {
+        const el = makeEl(true);
+        new ReadMore(el, { buttonClass: 'custom-btn' });
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        expect(btn.className).toBe('custom-btn');
+    });
+
+    it('unmounts the button when overflow disappears on resize', () => {
+        const el = makeEl(true);
+        new ReadMore(el);
+        expect(el.nextElementSibling).not.toBeNull();
+
+        setOverflow(el, false);
+        window.dispatchEvent(new Event('resize'));
+        expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('mounts the button later if overflow appears on resize', () => {
+        const el = makeEl(false);
+        new ReadMore(el);
+        expect(el.nextElementSibling).toBeNull();
+
+        setOverflow(el, true);
+        window.dispatchEvent(new Event('resize'));
+        expect(el.nextElementSibling).not.toBeNull();
+    });
+});
