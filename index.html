@@ -43,14 +43,95 @@
             color: #0c47a1;
             outline: none;
         }
+
+        .controls {
+            background: #f8f9fa;
+        }
+
+        .controls h2 {
+            margin-bottom: 0.75rem;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .control-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-group input[type="text"],
+        .control-group input[type="number"] {
+            padding: 0.35rem 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font: inherit;
+            font-size: 0.9rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-header h2 {
+            margin: 0;
+        }
+
+        .card-header label {
+            font-size: 0.8rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-left: auto;
+        }
+
+        .card-header input[type="number"] {
+            width: 3.5rem;
+            padding: 0.2rem 0.35rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font: inherit;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
 <h1>ReadMore plugin</h1>
 
+<div class="card controls">
+    <h2>Parameters</h2>
+    <div class="controls-grid">
+        <div class="control-group">
+            <label for="moreText">moreText</label>
+            <input id="moreText" type="text" value="Read more"/>
+        </div>
+        <div class="control-group">
+            <label for="lessText">lessText</label>
+            <input id="lessText" type="text" value="Read less"/>
+        </div>
+    </div>
+</div>
+
 <div class="card">
-    <h2>2 lines</h2>
-    <p class="excerpt-2">
+    <div class="card-header">
+        <h2>Example A</h2>
+        <label>lines <input id="lines-a" type="number" min="1" max="20" value="2"/></label>
+    </div>
+    <p class="excerpt-a">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
         ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -59,8 +140,11 @@
 </div>
 
 <div class="card">
-    <h2>4 lines</h2>
-    <p class="excerpt-4">
+    <div class="card-header">
+        <h2>Example B</h2>
+        <label>lines <input id="lines-b" type="number" min="1" max="20" value="4"/></label>
+    </div>
+    <p class="excerpt-b">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
         ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -72,14 +156,40 @@
 
 <div class="card">
     <h2>Short text (no button)</h2>
-    <p class="excerpt-2">Text is too short to be truncated.</p>
+    <p class="excerpt-short">Text is too short to be truncated.</p>
 </div>
 
 <script type="module">
     import { ReadMore } from '/src/readmore.ts';
 
-    ReadMore.init('.excerpt-2', { lines: 2 });
-    ReadMore.init('.excerpt-4', { lines: 4 });
+    let instances = [];
+
+    function reinit() {
+        instances.forEach(rm => rm.destroy());
+
+        const shared = {
+            moreText: document.getElementById('moreText').value || 'Read more',
+            lessText: document.getElementById('lessText').value || 'Read less',
+        };
+
+        instances = [
+            ...ReadMore.init('.excerpt-a', {
+                lines: parseInt(document.getElementById('lines-a').value) || 2,
+                ...shared,
+            }),
+            ...ReadMore.init('.excerpt-b', {
+                lines: parseInt(document.getElementById('lines-b').value) || 4,
+                ...shared,
+            }),
+            ...ReadMore.init('.excerpt-short', shared),
+        ];
+    }
+
+    reinit();
+
+    document.querySelectorAll('.controls input, #lines-a, #lines-b').forEach(input => {
+        input.addEventListener('input', reinit);
+    });
 </script>
 </body>
 </html>
