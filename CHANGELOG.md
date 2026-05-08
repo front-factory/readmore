@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/front-factory/readmore/compare/v1.0.2...v1.1.0) (2026-05-08)
+
+### Features
+
+* add height option as pixel-based alternative to lines ([389573a](https://github.com/front-factory/readmore/commit/389573a839e3ca6a21eab957faf27e059d3eff04))
+* add transient opening/closing state classes with transition support ([91b4ab2](https://github.com/front-factory/readmore/commit/91b4ab2f0cadc612c8587ac212f1d9ac08f79740))
+
 ## [1.0.2](https://github.com/front-factory/readmore/compare/v1.0.1...v1.0.2) (2026-05-08)
 
 ### Bug Fixes
