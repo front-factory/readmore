@@ -5,3 +5,10 @@
     -webkit-line-clamp: var(--readmore-lines, 3);
     line-clamp: var(--readmore-lines, 3);
 }
+
+.readmore-clamp--height {
+    display: block;
+    max-height: var(--readmore-height);
+    -webkit-line-clamp: none;
+    line-clamp: none;
+}

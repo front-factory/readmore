@@ -1,14 +1,16 @@
 export interface ReadMoreOptions {
     lines?: number;
+    height?: number;
     moreText?: string;
     lessText?: string;
     buttonClass?: string;
     expandedClass?: string;
 }
 
-type ResolvedOptions = Required<ReadMoreOptions>;
+type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height'>> & { height?: number };
 
 const CLAMP_CLASS = 'readmore-clamp';
+const CLAMP_HEIGHT_CLASS = 'readmore-clamp--height';
 
 const DEFAULTS: ResolvedOptions = {
     lines: 3,
@@ -54,6 +56,9 @@ export class ReadMore {
     toggle(): void {
         this.#expanded = !this.#expanded;
         this.el.classList.toggle(CLAMP_CLASS, !this.#expanded);
+        if (this.options.height != null) {
+            this.el.classList.toggle(CLAMP_HEIGHT_CLASS, !this.#expanded);
+        }
         this.el.classList.toggle(this.options.expandedClass, this.#expanded);
         if (this.#button) {
             this.#button.textContent = this.#expanded
@@ -66,13 +71,19 @@ export class ReadMore {
     destroy(): void {
         window.removeEventListener('resize', this.#onResize);
         this.#unmountButton();
-        this.el.classList.remove(CLAMP_CLASS, this.options.expandedClass);
+        this.el.classList.remove(CLAMP_CLASS, CLAMP_HEIGHT_CLASS, this.options.expandedClass);
         this.el.style.removeProperty('--readmore-lines');
+        this.el.style.removeProperty('--readmore-height');
     }
 
     #init(): void {
-        this.el.style.setProperty('--readmore-lines', String(this.options.lines));
-        this.el.classList.add(CLAMP_CLASS);
+        if (this.options.height != null) {
+            this.el.style.setProperty('--readmore-height', `${this.options.height}px`);
+            this.el.classList.add(CLAMP_CLASS, CLAMP_HEIGHT_CLASS);
+        } else {
+            this.el.style.setProperty('--readmore-lines', String(this.options.lines));
+            this.el.classList.add(CLAMP_CLASS);
+        }
         window.addEventListener('resize', this.#onResize);
         this.#refresh();
     }
