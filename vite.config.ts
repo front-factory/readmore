@@ -24,7 +24,10 @@ export default defineConfig({
         viteStaticCopy({
             targets: [{
                 src: 'src/readmore.css',
-                dest: '.'
+                dest: '.',
+                rename: {
+                    stripBase: true
+                }
             }]
         })
     ]
