@@ -39,7 +39,7 @@ jobs:
         run: npm run test
 
       - name: Tests Reporter
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         if: always()
         with:
           name: Tests
