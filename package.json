@@ -1,6 +1,6 @@
 {
     "name": "@frontfactory/readmore",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Lightweight plugin to clamp text to N lines with ellipsis and a read more action.",
     "type": "module",
     "scripts": {

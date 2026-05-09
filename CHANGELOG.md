@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/front-factory/readmore/compare/v1.1.0...v1.1.1) (2026-05-09)
+
+### Bug Fixes
+
+* debounce resize handler and fix transitionend listener leak ([0334ba0](https://github.com/front-factory/readmore/commit/0334ba0acf940c1b8bca1cff99eec62643ea8159))
+
 ## [1.1.0](https://github.com/front-factory/readmore/compare/v1.0.2...v1.1.0) (2026-05-08)
 
 ### Features
