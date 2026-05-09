@@ -18,9 +18,8 @@ export default defineConfig({
     },
     plugins: [
         dts({
-            rollupTypes: true,
             include: [
-                'src/**/*.ts'
+                'src/readmore.ts'
             ]
         }),
         viteStaticCopy({
