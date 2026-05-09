@@ -422,6 +422,51 @@ describe('ReadMore - button mounting based on overflow', () => {
         expect(btn.className).toBe('custom-btn');
     });
 
+    it('sets aria-expanded="false" and aria-controls on mount', () => {
+        const el = makeEl(true);
+        new ReadMore(el);
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        expect(btn.getAttribute('aria-expanded')).toBe('false');
+        expect(btn.getAttribute('aria-controls')).toBe(el.id);
+        expect(el.id).toMatch(/^readmore-\d+$/);
+    });
+
+    it('preserves an existing id on the element', () => {
+        const el = makeEl(true);
+        el.id = 'my-content';
+        new ReadMore(el);
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        expect(btn.getAttribute('aria-controls')).toBe('my-content');
+        expect(el.id).toBe('my-content');
+    });
+
+    it('updates aria-expanded on toggle', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        const btn = el.nextElementSibling as HTMLButtonElement;
+        expect(btn.getAttribute('aria-expanded')).toBe('false');
+        rm.toggle();
+        expect(btn.getAttribute('aria-expanded')).toBe('true');
+        rm.toggle();
+        expect(btn.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('removes the generated id on destroy', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        expect(el.id).toMatch(/^readmore-\d+$/);
+        rm.destroy();
+        expect(el.id).toBe('');
+    });
+
+    it('does not remove a pre-existing id on destroy', () => {
+        const el = makeEl(true);
+        el.id = 'my-content';
+        const rm = new ReadMore(el);
+        rm.destroy();
+        expect(el.id).toBe('my-content');
+    });
+
     it('unmounts the button when overflow disappears on resize', () => {
         const el = makeEl(true);
         new ReadMore(el);

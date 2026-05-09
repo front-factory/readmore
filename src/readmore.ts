@@ -15,6 +15,7 @@ const CLAMP_CLASS = 'readmore-clamp';
 const CLAMP_HEIGHT_CLASS = 'readmore-clamp--height';
 
 const instances = new WeakMap<HTMLElement, ReadMore>();
+let idCounter = 0;
 
 const DEFAULTS: ResolvedOptions = {
     lines: 3,
@@ -32,6 +33,7 @@ export class ReadMore {
 
     #button: HTMLButtonElement | null = null;
     #expanded = false;
+    #generatedId = false;
     #resizeObserver: ResizeObserver;
     #transitionEndListener: ((e: TransitionEvent) => void) | null = null;
     #onClick = (): void => this.toggle();
@@ -76,6 +78,7 @@ export class ReadMore {
             this.#button.textContent = this.#expanded
                 ? this.options.lessText
                 : this.options.moreText;
+            this.#button.setAttribute('aria-expanded', String(this.#expanded));
         }
         const stateClass = this.#expanded ? this.options.openingClass : this.options.closingClass;
         const otherClass = this.#expanded ? this.options.closingClass : this.options.openingClass;
@@ -105,6 +108,10 @@ export class ReadMore {
         );
         this.el.style.removeProperty('--readmore-lines');
         this.el.style.removeProperty('--readmore-height');
+        if (this.#generatedId) {
+            this.el.removeAttribute('id');
+            this.#generatedId = false;
+        }
     }
 
     #init(): void {
@@ -159,10 +166,16 @@ export class ReadMore {
     }
 
     #mountButton(): void {
+        if (!this.el.id) {
+            this.el.id = `readmore-${++idCounter}`;
+            this.#generatedId = true;
+        }
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = this.options.buttonClass;
         btn.textContent = this.options.moreText;
+        btn.setAttribute('aria-expanded', 'false');
+        btn.setAttribute('aria-controls', this.el.id);
         btn.addEventListener('click', this.#onClick);
         this.el.insertAdjacentElement('afterend', btn);
         this.#button = btn;
