@@ -14,6 +14,8 @@ type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height'>> & { height?: nu
 const CLAMP_CLASS = 'readmore-clamp';
 const CLAMP_HEIGHT_CLASS = 'readmore-clamp--height';
 
+const instances = new WeakMap<HTMLElement, ReadMore>();
+
 const DEFAULTS: ResolvedOptions = {
     lines: 3,
     moreText: 'Read more',
@@ -38,9 +40,13 @@ export class ReadMore {
         if (!(element instanceof HTMLElement)) {
             throw new TypeError('ReadMore: an HTMLElement is required.');
         }
+        if (instances.has(element)) {
+            throw new Error('ReadMore: element is already initialized. Call destroy() first.');
+        }
         this.el = element;
         this.options = { ...DEFAULTS, ...options };
         this.#resizeObserver = new ResizeObserver(() => this.#refresh());
+        instances.set(element, this);
         this.#init();
     }
 
@@ -78,7 +84,12 @@ export class ReadMore {
         if (!this.#expanded) this.#refresh();
     }
 
+    static getInstance(element: HTMLElement): ReadMore | undefined {
+        return instances.get(element);
+    }
+
     destroy(): void {
+        instances.delete(this.el);
         this.#resizeObserver.disconnect();
         if (this.#transitionEndListener) {
             this.el.removeEventListener('transitionend', this.#transitionEndListener);

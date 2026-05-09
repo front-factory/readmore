@@ -54,6 +54,28 @@ describe('ReadMore - constructor', () => {
         expect(() => new ReadMore('div' as unknown as HTMLElement)).toThrow(TypeError);
     });
 
+    it('throws when initialized twice on the same element', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        expect(() => new ReadMore(el)).toThrow('already initialized');
+        rm.destroy();
+    });
+
+    it('allows re-initialization after destroy', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        rm.destroy();
+        expect(() => new ReadMore(el)).not.toThrow();
+    });
+
+    it('getInstance returns the instance for a given element', () => {
+        const el = makeEl();
+        const rm = new ReadMore(el);
+        expect(ReadMore.getInstance(el)).toBe(rm);
+        rm.destroy();
+        expect(ReadMore.getInstance(el)).toBeUndefined();
+    });
+
     it('applies default options when none are provided', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
