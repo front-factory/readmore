@@ -28,7 +28,9 @@ jobs:
           cache: npm
 
       - name: Install Dependencies
-        run: npm ci --ignore-scripts --no-audit
+        run: npm ci --no-audit
+        env:
+          HUSKY: 0
 
       - name: Typecheck
         run: npm run typecheck
