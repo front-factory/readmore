@@ -386,22 +386,28 @@ describe('ReadMore - button mounting based on overflow', () => {
     });
 
     it('unmounts the button when overflow disappears on resize', () => {
+        vi.useFakeTimers();
         const el = makeEl(true);
         new ReadMore(el);
         expect(el.nextElementSibling).not.toBeNull();
 
         setOverflow(el, false);
         window.dispatchEvent(new Event('resize'));
+        vi.runAllTimers();
         expect(el.nextElementSibling).toBeNull();
+        vi.useRealTimers();
     });
 
     it('mounts the button later if overflow appears on resize', () => {
+        vi.useFakeTimers();
         const el = makeEl(false);
         new ReadMore(el);
         expect(el.nextElementSibling).toBeNull();
 
         setOverflow(el, true);
         window.dispatchEvent(new Event('resize'));
+        vi.runAllTimers();
         expect(el.nextElementSibling).not.toBeNull();
+        vi.useRealTimers();
     });
 });

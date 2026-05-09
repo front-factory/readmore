@@ -30,7 +30,15 @@ export class ReadMore {
 
     #button: HTMLButtonElement | null = null;
     #expanded = false;
-    #onResize = (): void => this.#refresh();
+    #resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    #transitionEndListener: ((e: TransitionEvent) => void) | null = null;
+    #onResize = (): void => {
+        if (this.#resizeTimer !== null) clearTimeout(this.#resizeTimer);
+        this.#resizeTimer = setTimeout(() => {
+            this.#resizeTimer = null;
+            this.#refresh();
+        }, 100);
+    };
     #onClick = (): void => this.toggle();
 
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
@@ -78,6 +86,14 @@ export class ReadMore {
 
     destroy(): void {
         window.removeEventListener('resize', this.#onResize);
+        if (this.#resizeTimer !== null) {
+            clearTimeout(this.#resizeTimer);
+            this.#resizeTimer = null;
+        }
+        if (this.#transitionEndListener) {
+            this.el.removeEventListener('transitionend', this.#transitionEndListener);
+            this.#transitionEndListener = null;
+        }
         this.#unmountButton();
         this.el.classList.remove(
             CLAMP_CLASS,
@@ -117,6 +133,10 @@ export class ReadMore {
     }
 
     #applyTransientClass(stateClass: string): void {
+        if (this.#transitionEndListener) {
+            this.el.removeEventListener('transitionend', this.#transitionEndListener);
+            this.#transitionEndListener = null;
+        }
         this.el.classList.add(stateClass);
         const remove = (): void => this.el.classList.remove(stateClass);
         const duration = getComputedStyle(this.el).transitionDuration;
@@ -130,8 +150,10 @@ export class ReadMore {
         const onEnd = (e: TransitionEvent): void => {
             if (e.target !== this.el) return;
             this.el.removeEventListener('transitionend', onEnd);
+            this.#transitionEndListener = null;
             remove();
         };
+        this.#transitionEndListener = onEnd;
         this.el.addEventListener('transitionend', onEnd);
     }
 
