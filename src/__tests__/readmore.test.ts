@@ -1,6 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ReadMore } from '../readmore';
 
+let triggerResize: () => void;
+let resizeObserverDisconnect: ReturnType<typeof vi.fn>;
+
+beforeEach(() => {
+    resizeObserverDisconnect = vi.fn();
+    const disconnect = resizeObserverDisconnect;
+    vi.stubGlobal('ResizeObserver', class {
+        constructor(cb: ResizeObserverCallback) {
+            triggerResize = () => cb([], this as unknown as ResizeObserver);
+        }
+        observe = vi.fn();
+        disconnect = disconnect;
+    });
+});
+
+afterEach(() => {
+    vi.unstubAllGlobals();
+});
+
 /**
  * jsdom always reports scrollHeight/clientHeight as 0. We override the
  * getters per element so we can simulate overflow on demand.
@@ -196,15 +215,11 @@ describe('ReadMore - destroy()', () => {
         expect(el.nextElementSibling).toBeNull();
     });
 
-    it('removes the resize listener', () => {
-        const removeSpy = vi.spyOn(window, 'removeEventListener');
+    it('disconnects the ResizeObserver on destroy', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
         rm.destroy();
-        const calledForResize = removeSpy.mock.calls.some(
-            ([type]) => type === 'resize'
-        );
-        expect(calledForResize).toBe(true);
+        expect(resizeObserverDisconnect).toHaveBeenCalledOnce();
     });
 });
 
@@ -386,28 +401,22 @@ describe('ReadMore - button mounting based on overflow', () => {
     });
 
     it('unmounts the button when overflow disappears on resize', () => {
-        vi.useFakeTimers();
         const el = makeEl(true);
         new ReadMore(el);
         expect(el.nextElementSibling).not.toBeNull();
 
         setOverflow(el, false);
-        window.dispatchEvent(new Event('resize'));
-        vi.runAllTimers();
+        triggerResize();
         expect(el.nextElementSibling).toBeNull();
-        vi.useRealTimers();
     });
 
     it('mounts the button later if overflow appears on resize', () => {
-        vi.useFakeTimers();
         const el = makeEl(false);
         new ReadMore(el);
         expect(el.nextElementSibling).toBeNull();
 
         setOverflow(el, true);
-        window.dispatchEvent(new Event('resize'));
-        vi.runAllTimers();
+        triggerResize();
         expect(el.nextElementSibling).not.toBeNull();
-        vi.useRealTimers();
     });
 });

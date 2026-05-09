@@ -30,15 +30,8 @@ export class ReadMore {
 
     #button: HTMLButtonElement | null = null;
     #expanded = false;
-    #resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    #resizeObserver: ResizeObserver;
     #transitionEndListener: ((e: TransitionEvent) => void) | null = null;
-    #onResize = (): void => {
-        if (this.#resizeTimer !== null) clearTimeout(this.#resizeTimer);
-        this.#resizeTimer = setTimeout(() => {
-            this.#resizeTimer = null;
-            this.#refresh();
-        }, 100);
-    };
     #onClick = (): void => this.toggle();
 
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
@@ -47,6 +40,7 @@ export class ReadMore {
         }
         this.el = element;
         this.options = { ...DEFAULTS, ...options };
+        this.#resizeObserver = new ResizeObserver(() => this.#refresh());
         this.#init();
     }
 
@@ -85,11 +79,7 @@ export class ReadMore {
     }
 
     destroy(): void {
-        window.removeEventListener('resize', this.#onResize);
-        if (this.#resizeTimer !== null) {
-            clearTimeout(this.#resizeTimer);
-            this.#resizeTimer = null;
-        }
+        this.#resizeObserver.disconnect();
         if (this.#transitionEndListener) {
             this.el.removeEventListener('transitionend', this.#transitionEndListener);
             this.#transitionEndListener = null;
@@ -114,7 +104,7 @@ export class ReadMore {
             this.el.style.setProperty('--readmore-lines', String(this.options.lines));
             this.el.classList.add(CLAMP_CLASS);
         }
-        window.addEventListener('resize', this.#onResize);
+        this.#resizeObserver.observe(this.el);
         this.#refresh();
     }
 
