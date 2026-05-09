@@ -18,7 +18,6 @@
         "node": ">=20.19"
     },
     "main": "./dist/readmore.js",
-    "module": "./dist/readmore.js",
     "types": "./dist/readmore.d.ts",
     "exports": {
         ".": {
