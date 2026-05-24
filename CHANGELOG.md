@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.0](https://github.com/front-factory/readmore/compare/v1.2.0...v1.3.0) (2026-05-24)
+
+### Features
+
+* add onToggle callback option ([ff217aa](https://github.com/front-factory/readmore/commit/ff217aa9622b9f2abd5f04e947bac6088221c645))
+* validate lines and height options ([60b2767](https://github.com/front-factory/readmore/commit/60b276781db59ed765a181b17798c8458df19675))
+
 ## [1.2.0](https://github.com/front-factory/readmore/compare/v1.1.1...v1.2.0) (2026-05-09)
 
 ### Features
