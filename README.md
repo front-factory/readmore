@@ -61,8 +61,8 @@ if (el) new ReadMore(el, {
 
 | Option          | Type     | Default          | Description                                                        |
 |-----------------|----------|------------------|--------------------------------------------------------------------|
-| `lines`         | `number` | `3`              | Number of lines to clamp to. Ignored if `height` is set.           |
-| `height`        | `number` | —                | Max height in pixels. Takes precedence over `lines` when provided. |
+| `lines`         | `number` | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set. |
+| `height`        | `number` | —                | Max height in pixels (min `1`). Takes precedence over `lines`.     |
 | `moreText`      | `string` | `'Read more'`    | Label of the button when the text is collapsed.                    |
 | `lessText`      | `string` | `'Read less'`    | Label of the button when the text is expanded.                     |
 | `buttonClass`   | `string` | `'readmore-btn'` | Class applied to the toggle button.                                |

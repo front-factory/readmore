@@ -50,8 +50,16 @@ export class ReadMore {
         this.el = element;
         this.options = {
             ...DEFAULTS,
-            ...options 
+            ...options
         };
+
+        if (this.options.height != null && this.options.height <= 0) {
+            throw new RangeError('ReadMore: height must be greater than 0.');
+        }
+
+        if (this.options.lines < 1) {
+            throw new RangeError('ReadMore: lines must be at least 1.');
+        }
 
         this.#resizeObserver = new ResizeObserver(() => this.#refresh());
         instances.set(element, this);

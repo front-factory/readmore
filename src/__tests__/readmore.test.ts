@@ -60,6 +60,32 @@ describe('ReadMore - constructor', () => {
         expect(() => new ReadMore('div' as unknown as HTMLElement)).toThrow(TypeError);
     });
 
+    it('throws RangeError when lines is less than 1', () => {
+        const el = makeEl();
+
+        expect(() => new ReadMore(el, { lines: 0 })).toThrow(RangeError);
+        expect(() => new ReadMore(el, { lines: -5 })).toThrow(RangeError);
+    });
+
+    it('throws RangeError when height is 0 or negative', () => {
+        const el = makeEl();
+
+        expect(() => new ReadMore(el, { height: 0 })).toThrow(RangeError);
+        expect(() => new ReadMore(el, { height: -10 })).toThrow(RangeError);
+    });
+
+    it('accepts valid lines and height values', () => {
+        const a = makeEl();
+        const b = makeEl();
+        const rmA = new ReadMore(a, { lines: 1 });
+        const rmB = new ReadMore(b, { height: 1 });
+
+        expect(rmA.options.lines).toBe(1);
+        expect(rmB.options.height).toBe(1);
+        rmA.destroy();
+        rmB.destroy();
+    });
+
     it('throws when initialized twice on the same element', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
