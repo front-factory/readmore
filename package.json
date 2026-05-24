@@ -49,6 +49,7 @@
         "vite-plugin-static-copy": "^4.1.0",
         "vitest": "^4.1.5"
     },
+    "sideEffects": false,
     "files": [
         "dist"
     ],
