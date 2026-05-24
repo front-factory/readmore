@@ -42,11 +42,17 @@ export class ReadMore {
         if (!(element instanceof HTMLElement)) {
             throw new TypeError('ReadMore: an HTMLElement is required.');
         }
+
         if (instances.has(element)) {
             throw new Error('ReadMore: element is already initialized. Call destroy() first.');
         }
+
         this.el = element;
-        this.options = { ...DEFAULTS, ...options };
+        this.options = {
+            ...DEFAULTS,
+            ...options 
+        };
+
         this.#resizeObserver = new ResizeObserver(() => this.#refresh());
         instances.set(element, this);
         this.#init();
@@ -60,6 +66,7 @@ export class ReadMore {
             typeof target === 'string'
                 ? document.querySelectorAll<HTMLElement>(target)
                 : target;
+
         return Array.from(nodes).map((n) => new ReadMore(n, options));
     }
 
@@ -70,21 +77,30 @@ export class ReadMore {
     toggle(): void {
         this.#expanded = !this.#expanded;
         this.el.classList.toggle(CLAMP_CLASS, !this.#expanded);
+
         if (this.options.height != null) {
             this.el.classList.toggle(CLAMP_HEIGHT_CLASS, !this.#expanded);
         }
+
         this.el.classList.toggle(this.options.expandedClass, this.#expanded);
+
         if (this.#button) {
             this.#button.textContent = this.#expanded
                 ? this.options.lessText
                 : this.options.moreText;
+
             this.#button.setAttribute('aria-expanded', String(this.#expanded));
         }
+
         const stateClass = this.#expanded ? this.options.openingClass : this.options.closingClass;
         const otherClass = this.#expanded ? this.options.closingClass : this.options.openingClass;
+
         this.el.classList.remove(otherClass);
         this.#applyTransientClass(stateClass);
-        if (!this.#expanded) this.#refresh();
+
+        if (!this.#expanded) {
+            this.#refresh();
+        }
     }
 
     static getInstance(element: HTMLElement): ReadMore | undefined {
@@ -94,10 +110,12 @@ export class ReadMore {
     destroy(): void {
         instances.delete(this.el);
         this.#resizeObserver.disconnect();
+
         if (this.#transitionEndListener) {
             this.el.removeEventListener('transitionend', this.#transitionEndListener);
             this.#transitionEndListener = null;
         }
+
         this.#unmountButton();
         this.el.classList.remove(
             CLAMP_CLASS,
@@ -106,8 +124,10 @@ export class ReadMore {
             this.options.openingClass,
             this.options.closingClass
         );
+
         this.el.style.removeProperty('--readmore-lines');
         this.el.style.removeProperty('--readmore-height');
+
         if (this.#generatedId) {
             this.el.removeAttribute('id');
             this.#generatedId = false;
@@ -122,6 +142,7 @@ export class ReadMore {
             this.el.style.setProperty('--readmore-lines', String(this.options.lines));
             this.el.classList.add(CLAMP_CLASS);
         }
+
         this.#resizeObserver.observe(this.el);
         this.#refresh();
     }
@@ -131,8 +152,12 @@ export class ReadMore {
     }
 
     #refresh(): void {
-        if (this.#expanded) return;
+        if (this.#expanded) {
+            return;
+        }
+
         const overflowing = this.#isOverflowing();
+
         if (overflowing && !this.#button) {
             this.#mountButton();
         } else if (!overflowing && this.#button) {
@@ -145,22 +170,30 @@ export class ReadMore {
             this.el.removeEventListener('transitionend', this.#transitionEndListener);
             this.#transitionEndListener = null;
         }
+
         this.el.classList.add(stateClass);
         const remove = (): void => this.el.classList.remove(stateClass);
         const duration = getComputedStyle(this.el).transitionDuration;
         const hasTransition = duration
             .split(',')
             .some((d) => parseFloat(d) > 0);
+
         if (!hasTransition) {
             setTimeout(remove, 0);
+
             return;
         }
+
         const onEnd = (e: TransitionEvent): void => {
-            if (e.target !== this.el) return;
+            if (e.target !== this.el) {
+                return;
+            }
+
             this.el.removeEventListener('transitionend', onEnd);
             this.#transitionEndListener = null;
             remove();
         };
+
         this.#transitionEndListener = onEnd;
         this.el.addEventListener('transitionend', onEnd);
     }
@@ -170,7 +203,9 @@ export class ReadMore {
             this.el.id = `readmore-${++idCounter}`;
             this.#generatedId = true;
         }
+
         const btn = document.createElement('button');
+
         btn.type = 'button';
         btn.className = this.options.buttonClass;
         btn.textContent = this.options.moreText;
@@ -182,7 +217,10 @@ export class ReadMore {
     }
 
     #unmountButton(): void {
-        if (!this.#button) return;
+        if (!this.#button) {
+            return;
+        }
+
         this.#button.removeEventListener('click', this.#onClick);
         this.#button.remove();
         this.#button = null;

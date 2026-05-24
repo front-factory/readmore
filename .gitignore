@@ -8,7 +8,7 @@ junit.xml
 ## Folders
 /.DS_Store
 /.idea
-./vite
+/.vite
 /dist
 /logs
 /node_modules

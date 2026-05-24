@@ -22,25 +22,27 @@ export default defineConfig({
             ]
         }),
         viteStaticCopy({
-            targets: [{
-                src: 'src/readmore.css',
-                dest: '.',
-                rename: {
-                    stripBase: true
-                },
-                transform: {
-                    encoding: 'buffer',
-                    handler: (content, filename) => {
-                        const { code } = lightningcssTransform({
-                            filename,
-                            code: content,
-                            minify: true
-                        });
+            targets: [
+                {
+                    src: 'src/readmore.css',
+                    dest: '.',
+                    rename: {
+                        stripBase: true
+                    },
+                    transform: {
+                        encoding: 'buffer',
+                        handler: (content, filename) => {
+                            const { code } = lightningcssTransform({
+                                filename,
+                                code: content,
+                                minify: true
+                            });
 
-                        return Buffer.from(code);
+                            return Buffer.from(code);
+                        }
                     }
                 }
-            }]
+            ]
         })
     ]
 });

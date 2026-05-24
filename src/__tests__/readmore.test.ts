@@ -1,4 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach, beforeEach, describe, expect, it, vi 
+} from 'vitest';
 import { ReadMore } from '../readmore';
 
 let triggerResize: () => void;
@@ -7,6 +9,7 @@ let resizeObserverDisconnect: ReturnType<typeof vi.fn>;
 beforeEach(() => {
     resizeObserverDisconnect = vi.fn();
     const disconnect = resizeObserverDisconnect;
+
     vi.stubGlobal('ResizeObserver', class {
         constructor(cb: ResizeObserverCallback) {
             triggerResize = () => cb([], this as unknown as ResizeObserver);
@@ -29,6 +32,7 @@ function setOverflow(el: HTMLElement, overflowing: boolean): void {
         configurable: true,
         get: () => (overflowing ? 200 : 50)
     });
+
     Object.defineProperty(el, 'clientHeight', {
         configurable: true,
         get: () => 50
@@ -37,9 +41,11 @@ function setOverflow(el: HTMLElement, overflowing: boolean): void {
 
 function makeEl(overflowing = false): HTMLElement {
     const el = document.createElement('div');
+
     el.textContent = 'Some long content that may overflow';
     document.body.appendChild(el);
     setOverflow(el, overflowing);
+
     return el;
 }
 
@@ -57,6 +63,7 @@ describe('ReadMore - constructor', () => {
     it('throws when initialized twice on the same element', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         expect(() => new ReadMore(el)).toThrow('already initialized');
         rm.destroy();
     });
@@ -64,6 +71,7 @@ describe('ReadMore - constructor', () => {
     it('allows re-initialization after destroy', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         rm.destroy();
         expect(() => new ReadMore(el)).not.toThrow();
     });
@@ -71,6 +79,7 @@ describe('ReadMore - constructor', () => {
     it('getInstance returns the instance for a given element', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         expect(ReadMore.getInstance(el)).toBe(rm);
         rm.destroy();
         expect(ReadMore.getInstance(el)).toBeUndefined();
@@ -79,6 +88,7 @@ describe('ReadMore - constructor', () => {
     it('applies default options when none are provided', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         expect(rm.options.lines).toBe(3);
         expect(rm.options.moreText).toBe('Read more');
         expect(rm.options.lessText).toBe('Read less');
@@ -96,6 +106,7 @@ describe('ReadMore - constructor', () => {
             buttonClass: 'my-btn',
             expandedClass: 'open'
         });
+
         expect(rm.options.lines).toBe(5);
         expect(rm.options.moreText).toBe('Plus');
         expect(rm.options.lessText).toBe('Moins');
@@ -106,6 +117,7 @@ describe('ReadMore - constructor', () => {
     it('exposes the element on the instance', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         expect(rm.el).toBe(el);
         expect(rm.expanded).toBe(false);
     });
@@ -118,7 +130,11 @@ describe('ReadMore - lines mode', () => {
 
     it('sets --readmore-lines and adds the clamp class', () => {
         const el = makeEl();
-        new ReadMore(el, { lines: 4 });
+
+        new ReadMore(el, {
+            lines: 4 
+        });
+
         expect(el.style.getPropertyValue('--readmore-lines')).toBe('4');
         expect(el.classList.contains('readmore-clamp')).toBe(true);
         expect(el.classList.contains('readmore-clamp--height')).toBe(false);
@@ -127,6 +143,7 @@ describe('ReadMore - lines mode', () => {
 
     it('uses default lines value when not specified', () => {
         const el = makeEl();
+
         new ReadMore(el);
         expect(el.style.getPropertyValue('--readmore-lines')).toBe('3');
     });
@@ -139,7 +156,11 @@ describe('ReadMore - height mode', () => {
 
     it('sets --readmore-height and adds both clamp classes', () => {
         const el = makeEl();
-        new ReadMore(el, { height: 120 });
+
+        new ReadMore(el, {
+            height: 120 
+        });
+
         expect(el.style.getPropertyValue('--readmore-height')).toBe('120px');
         expect(el.classList.contains('readmore-clamp')).toBe(true);
         expect(el.classList.contains('readmore-clamp--height')).toBe(true);
@@ -147,7 +168,11 @@ describe('ReadMore - height mode', () => {
 
     it('does not set --readmore-lines in height mode', () => {
         const el = makeEl();
-        new ReadMore(el, { height: 80 });
+
+        new ReadMore(el, {
+            height: 80 
+        });
+
         expect(el.style.getPropertyValue('--readmore-lines')).toBe('');
     });
 });
@@ -178,7 +203,10 @@ describe('ReadMore - toggle()', () => {
 
     it('toggles the height clamp class only in height mode', () => {
         const el = makeEl(true);
-        const rm = new ReadMore(el, { height: 100 });
+        const rm = new ReadMore(el, {
+            height: 100 
+        });
+
         expect(el.classList.contains('readmore-clamp--height')).toBe(true);
         rm.toggle();
         expect(el.classList.contains('readmore-clamp--height')).toBe(false);
@@ -188,8 +216,12 @@ describe('ReadMore - toggle()', () => {
 
     it('updates the button text on toggle', () => {
         const el = makeEl(true);
-        const rm = new ReadMore(el, { moreText: 'More', lessText: 'Less' });
+        const rm = new ReadMore(el, {
+            moreText: 'More',
+            lessText: 'Less' 
+        });
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         expect(btn).toBeInstanceOf(HTMLButtonElement);
         expect(btn.textContent).toBe('More');
 
@@ -204,6 +236,7 @@ describe('ReadMore - toggle()', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         btn.click();
         expect(rm.expanded).toBe(true);
         btn.click();
@@ -219,7 +252,10 @@ describe('ReadMore - destroy()', () => {
 
     it('removes classes and CSS variables', () => {
         const el = makeEl(true);
-        const rm = new ReadMore(el, { height: 100 });
+        const rm = new ReadMore(el, {
+            height: 100 
+        });
+
         rm.toggle();
         rm.destroy();
         expect(el.classList.contains('readmore-clamp')).toBe(false);
@@ -232,6 +268,7 @@ describe('ReadMore - destroy()', () => {
     it('removes the button from the DOM', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);
+
         expect(el.nextElementSibling).not.toBeNull();
         rm.destroy();
         expect(el.nextElementSibling).toBeNull();
@@ -240,6 +277,7 @@ describe('ReadMore - destroy()', () => {
     it('disconnects the ResizeObserver on destroy', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         rm.destroy();
         expect(resizeObserverDisconnect).toHaveBeenCalledOnce();
     });
@@ -254,6 +292,7 @@ describe('ReadMore - transient state classes', () => {
     it('applies default opening/closing class names', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
+
         expect(rm.options.openingClass).toBe('is-opening');
         expect(rm.options.closingClass).toBe('is-closing');
     });
@@ -264,6 +303,7 @@ describe('ReadMore - transient state classes', () => {
             openingClass: 'opening',
             closingClass: 'closing'
         });
+
         expect(rm.options.openingClass).toBe('opening');
         expect(rm.options.closingClass).toBe('closing');
     });
@@ -272,6 +312,7 @@ describe('ReadMore - transient state classes', () => {
         vi.useFakeTimers();
         const el = makeEl(true);
         const rm = new ReadMore(el);
+
         rm.toggle();
         expect(el.classList.contains('is-opening')).toBe(true);
         expect(el.classList.contains('is-closing')).toBe(false);
@@ -283,6 +324,7 @@ describe('ReadMore - transient state classes', () => {
         vi.useFakeTimers();
         const el = makeEl(true);
         const rm = new ReadMore(el);
+
         rm.toggle(); // expand
         vi.runAllTimers();
         rm.toggle(); // collapse
@@ -296,6 +338,7 @@ describe('ReadMore - transient state classes', () => {
         vi.useFakeTimers();
         const el = makeEl(true);
         const rm = new ReadMore(el);
+
         rm.toggle(); // expand -> is-opening
         expect(el.classList.contains('is-opening')).toBe(true);
         rm.toggle(); // collapse -> should remove is-opening, add is-closing
@@ -312,28 +355,42 @@ describe('ReadMore - transient state classes', () => {
         );
         const spy = vi.spyOn(window, 'getComputedStyle').mockImplementation(
             ((elt: Element) => {
-                const proxy = { transitionDuration: '0.3s' } as unknown as CSSStyleDeclaration;
+                const proxy = {
+                    transitionDuration: '0.3s' 
+                } as unknown as CSSStyleDeclaration;
+
                 return new Proxy(proxy, {
                     get(target, prop) {
-                        if (prop in target) return (target as unknown as Record<string | symbol, unknown>)[prop as string];
+                        if (prop in target) {
+                            return (target as unknown as Record<string | symbol, unknown>)[prop as string];
+                        }
+
                         return '';
                     }
                 });
             }) as typeof window.getComputedStyle
         );
         const rm = new ReadMore(el);
+
         rm.toggle();
         expect(el.classList.contains('is-opening')).toBe(true);
         el.dispatchEvent(new Event('transitionend'));
         expect(el.classList.contains('is-opening')).toBe(false);
         spy.mockRestore();
-        if (original) Object.defineProperty(window, 'getComputedStyle', original);
+
+        if (original) {
+            Object.defineProperty(window, 'getComputedStyle', original);
+        }
     });
 
     it('uses custom class names when provided', () => {
         vi.useFakeTimers();
         const el = makeEl(true);
-        const rm = new ReadMore(el, { openingClass: 'opening', closingClass: 'closing' });
+        const rm = new ReadMore(el, {
+            openingClass: 'opening',
+            closingClass: 'closing' 
+        });
+
         rm.toggle();
         expect(el.classList.contains('opening')).toBe(true);
         vi.runAllTimers();
@@ -347,6 +404,7 @@ describe('ReadMore - transient state classes', () => {
     it('destroy() removes lingering transient classes', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);
+
         rm.toggle();
         expect(el.classList.contains('is-opening')).toBe(true);
         rm.destroy();
@@ -363,9 +421,11 @@ describe('ReadMore.init - static', () => {
     it('returns a ReadMore array from a CSS selector', () => {
         const a = makeEl();
         const b = makeEl();
+
         a.classList.add('rm');
         b.classList.add('rm');
         const result = ReadMore.init('.rm');
+
         expect(Array.isArray(result)).toBe(true);
         expect(result).toHaveLength(2);
         expect(result[0]).toBeInstanceOf(ReadMore);
@@ -375,21 +435,30 @@ describe('ReadMore.init - static', () => {
     it('accepts an array of HTMLElements', () => {
         const a = makeEl();
         const b = makeEl();
-        const result = ReadMore.init([a, b], { lines: 2 });
+        const result = ReadMore.init([
+            a,
+            b
+        ], {
+            lines: 2 
+        });
+
         expect(result).toHaveLength(2);
         expect(result[0].options.lines).toBe(2);
     });
 
     it('accepts a NodeList', () => {
         const a = makeEl();
+
         a.classList.add('rm-nl');
         const nodes = document.querySelectorAll<HTMLElement>('.rm-nl');
         const result = ReadMore.init(nodes);
+
         expect(result).toHaveLength(1);
     });
 
     it('returns an empty array when nothing matches', () => {
         const result = ReadMore.init('.does-not-exist');
+
         expect(result).toEqual([]);
     });
 });
@@ -401,14 +470,17 @@ describe('ReadMore - button mounting based on overflow', () => {
 
     it('does not mount the button when content does not overflow', () => {
         const el = makeEl(false);
+
         new ReadMore(el);
         expect(el.nextElementSibling).toBeNull();
     });
 
     it('mounts the button when content overflows', () => {
         const el = makeEl(true);
+
         new ReadMore(el);
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         expect(btn).toBeInstanceOf(HTMLButtonElement);
         expect(btn.type).toBe('button');
         expect(btn.className).toBe('readmore-btn');
@@ -417,15 +489,22 @@ describe('ReadMore - button mounting based on overflow', () => {
 
     it('uses the configured buttonClass', () => {
         const el = makeEl(true);
-        new ReadMore(el, { buttonClass: 'custom-btn' });
+
+        new ReadMore(el, {
+            buttonClass: 'custom-btn' 
+        });
+
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         expect(btn.className).toBe('custom-btn');
     });
 
     it('sets aria-expanded="false" and aria-controls on mount', () => {
         const el = makeEl(true);
+
         new ReadMore(el);
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         expect(btn.getAttribute('aria-expanded')).toBe('false');
         expect(btn.getAttribute('aria-controls')).toBe(el.id);
         expect(el.id).toMatch(/^readmore-\d+$/);
@@ -433,9 +512,11 @@ describe('ReadMore - button mounting based on overflow', () => {
 
     it('preserves an existing id on the element', () => {
         const el = makeEl(true);
+
         el.id = 'my-content';
         new ReadMore(el);
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         expect(btn.getAttribute('aria-controls')).toBe('my-content');
         expect(el.id).toBe('my-content');
     });
@@ -444,6 +525,7 @@ describe('ReadMore - button mounting based on overflow', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);
         const btn = el.nextElementSibling as HTMLButtonElement;
+
         expect(btn.getAttribute('aria-expanded')).toBe('false');
         rm.toggle();
         expect(btn.getAttribute('aria-expanded')).toBe('true');
@@ -454,6 +536,7 @@ describe('ReadMore - button mounting based on overflow', () => {
     it('removes the generated id on destroy', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);
+
         expect(el.id).toMatch(/^readmore-\d+$/);
         rm.destroy();
         expect(el.id).toBe('');
@@ -461,14 +544,17 @@ describe('ReadMore - button mounting based on overflow', () => {
 
     it('does not remove a pre-existing id on destroy', () => {
         const el = makeEl(true);
+
         el.id = 'my-content';
         const rm = new ReadMore(el);
+
         rm.destroy();
         expect(el.id).toBe('my-content');
     });
 
     it('unmounts the button when overflow disappears on resize', () => {
         const el = makeEl(true);
+
         new ReadMore(el);
         expect(el.nextElementSibling).not.toBeNull();
 
@@ -479,6 +565,7 @@ describe('ReadMore - button mounting based on overflow', () => {
 
     it('mounts the button later if overflow appears on resize', () => {
         const el = makeEl(false);
+
         new ReadMore(el);
         expect(el.nextElementSibling).toBeNull();
 
