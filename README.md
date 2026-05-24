@@ -53,7 +53,8 @@ Or instantiate against a single element:
 const el = document.querySelector<HTMLElement>('#bio');
 
 if (el) new ReadMore(el, {
-    lines: 4
+    lines: 4,
+    onToggle: (expanded) => console.log('expanded:', expanded)
 });
 ```
 
@@ -69,6 +70,7 @@ if (el) new ReadMore(el, {
 | `expandedClass` | `string` | `'is-expanded'`  | Class applied to the target element while expanded.                |
 | `openingClass`  | `string` | `'is-opening'`   | Transient class applied while expanding, removed after transition. |
 | `closingClass`  | `string` | `'is-closing'`   | Transient class applied while collapsing, removed after transition.|
+| `onToggle`      | `(expanded: boolean) => void` | — | Callback fired after each toggle with the current `expanded` state. |
 
 ## API
 

@@ -268,6 +268,27 @@ describe('ReadMore - toggle()', () => {
         btn.click();
         expect(rm.expanded).toBe(false);
     });
+
+    it('calls onToggle callback with the expanded state', () => {
+        const onToggle = vi.fn();
+        const el = makeEl(true);
+        const rm = new ReadMore(el, { onToggle });
+
+        rm.toggle();
+        expect(onToggle).toHaveBeenCalledWith(true);
+
+        rm.toggle();
+        expect(onToggle).toHaveBeenCalledWith(false);
+
+        expect(onToggle).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not throw when onToggle is not provided', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        expect(() => rm.toggle()).not.toThrow();
+    });
 });
 
 describe('ReadMore - destroy()', () => {

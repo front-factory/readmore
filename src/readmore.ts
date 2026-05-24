@@ -7,9 +7,13 @@ export interface ReadMoreOptions {
     expandedClass?: string;
     openingClass?: string;
     closingClass?: string;
+    onToggle?: (expanded: boolean) => void;
 }
 
-type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height'>> & { height?: number };
+type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height' | 'onToggle'>> & {
+    height?: number;
+    onToggle?: (expanded: boolean) => void;
+};
 
 const CLAMP_CLASS = 'readmore-clamp';
 const CLAMP_HEIGHT_CLASS = 'readmore-clamp--height';
@@ -109,6 +113,8 @@ export class ReadMore {
         if (!this.#expanded) {
             this.#refresh();
         }
+
+        this.options.onToggle?.(this.#expanded);
     }
 
     static getInstance(element: HTMLElement): ReadMore | undefined {
