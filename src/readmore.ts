@@ -1,16 +1,80 @@
+/**
+ * Options accepted by {@link ReadMore}. Every field is optional.
+ */
 export interface ReadMoreOptions {
+    /**
+     * Number of lines to clamp to. Ignored when {@link ReadMoreOptions.height} is set.
+     *
+     * @defaultValue 3
+     * @throws RangeError - if lower than 1.
+     */
     lines?: number;
+
+    /**
+     * Max height in pixels. Takes precedence over {@link ReadMoreOptions.lines}
+     * and clamps with `max-height` instead of `-webkit-line-clamp`.
+     *
+     * @throws RangeError - if lower than or equal to 0.
+     */
     height?: number;
+
+    /**
+     * Label of the toggle button while the text is collapsed.
+     *
+     * @defaultValue 'Read more'
+     */
     moreText?: string;
+
+    /**
+     * Label of the toggle button while the text is expanded.
+     *
+     * @defaultValue 'Read less'
+     */
     lessText?: string;
+
+    /**
+     * Class applied to the toggle button.
+     *
+     * @defaultValue 'readmore-btn'
+     */
     buttonClass?: string;
+
+    /**
+     * Class applied to the target element for the whole expanded state.
+     *
+     * @defaultValue 'is-expanded'
+     */
     expandedClass?: string;
+
+    /**
+     * Transient class applied when expanding, removed once the CSS transition
+     * on the element ends — or on the next tick if no transition is declared.
+     *
+     * @defaultValue 'is-opening'
+     */
     openingClass?: string;
+
+    /**
+     * Transient class applied when collapsing, removed once the CSS transition
+     * on the element ends — or on the next tick if no transition is declared.
+     *
+     * @defaultValue 'is-closing'
+     */
     closingClass?: string;
+
+    /**
+     * Called after each toggle with the resulting state.
+     *
+     * @param expanded - `true` once expanded, `false` once collapsed.
+     */
     onToggle?: (expanded: boolean) => void;
 }
 
-type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height' | 'onToggle'>> & {
+/**
+ * {@link ReadMoreOptions} merged with the defaults, as exposed on
+ * {@link ReadMore.options}.
+ */
+export type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height' | 'onToggle'>> & {
     height?: number;
     onToggle?: (expanded: boolean) => void;
 };
@@ -31,8 +95,24 @@ const DEFAULTS: ResolvedOptions = {
     closingClass: 'is-closing'
 };
 
+/**
+ * Clamps an element to a number of lines (or a fixed height) and mounts a
+ * `Read more` / `Read less` button right after it, but only while the content
+ * actually overflows.
+ *
+ * @example
+ * ```ts
+ * import { ReadMore } from '@frontfactory/readmore';
+ * import '@frontfactory/readmore/style.css';
+ *
+ * ReadMore.init('.excerpt', { lines: 3 });
+ * ```
+ */
 export class ReadMore {
+    /** The clamped element. */
     readonly el: HTMLElement;
+
+    /** The options this instance was built with, merged with the defaults. */
     readonly options: ResolvedOptions;
 
     #button: HTMLButtonElement | null = null;
@@ -42,6 +122,15 @@ export class ReadMore {
     #transitionEndListener: ((e: TransitionEvent) => void) | null = null;
     #onClick = (): void => this.toggle();
 
+    /**
+     * @param element - The element to clamp.
+     * @param options - See {@link ReadMoreOptions}.
+     * @throws TypeError - if `element` is not an `HTMLElement`.
+     * @throws Error - if `element` is already initialized; call
+     * {@link ReadMore.destroy} first.
+     * @throws RangeError - if `lines` is lower than 1, or `height` lower than
+     * or equal to 0.
+     */
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
         if (!(element instanceof HTMLElement)) {
             throw new TypeError('ReadMore: an HTMLElement is required.');
@@ -70,6 +159,13 @@ export class ReadMore {
         this.#init();
     }
 
+    /**
+     * Instantiates {@link ReadMore} on every matching element.
+     *
+     * @param target - A CSS selector, a `NodeList` or an array of elements.
+     * @param options - See {@link ReadMoreOptions}.
+     * @returns One instance per element, in document order.
+     */
     static init(
         target: string | NodeListOf<HTMLElement> | HTMLElement[],
         options?: ReadMoreOptions
@@ -82,10 +178,16 @@ export class ReadMore {
         return Array.from(nodes).map((n) => new ReadMore(n, options));
     }
 
+    /** Whether the text is currently expanded. */
     get expanded(): boolean {
         return this.#expanded;
     }
 
+    /**
+     * Expands or collapses the text, updating the button label, the
+     * `aria-expanded` attribute and the state classes, then calls
+     * {@link ReadMoreOptions.onToggle}.
+     */
     toggle(): void {
         this.#expanded = !this.#expanded;
         this.el.classList.toggle(CLAMP_CLASS, !this.#expanded);
@@ -117,10 +219,19 @@ export class ReadMore {
         this.options.onToggle?.(this.#expanded);
     }
 
+    /**
+     * @param element - An element possibly initialized by this plugin.
+     * @returns The instance bound to it, or `undefined`.
+     */
     static getInstance(element: HTMLElement): ReadMore | undefined {
         return instances.get(element);
     }
 
+    /**
+     * Restores the element: removes the button, the classes, the CSS custom
+     * properties, the listeners and the generated `id`. The element can then be
+     * initialized again.
+     */
     destroy(): void {
         instances.delete(this.el);
         this.#resizeObserver.disconnect();
