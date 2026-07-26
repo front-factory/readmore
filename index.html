@@ -107,6 +107,49 @@
             font: inherit;
             font-size: 0.85rem;
         }
+
+        /* Example C declares a real transition, so the transient classes are
+           removed on transitionend rather than on the fallback tick. */
+        .excerpt-c {
+            transition: max-height 0.35s ease, background-color 0.35s ease;
+        }
+
+        .excerpt-c.is-expanded {
+            max-height: 40rem;
+        }
+
+        .excerpt-c.is-opening {
+            background: #e8f0fe;
+        }
+
+        .excerpt-c.is-closing {
+            background: #fdecec;
+        }
+
+        /* Example D renames every class the plugin applies. */
+        .link-btn {
+            margin-top: 0.25rem;
+            padding: 0.25rem 0.6rem;
+            background: #1a73e8;
+            border: 0;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.85rem;
+        }
+
+        .excerpt-d.open {
+            border-left: 3px solid #1a73e8;
+            padding-left: 0.75rem;
+        }
+
+        .log {
+            margin: 0;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 0.8rem;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -124,6 +167,11 @@
             <input id="lessText" type="text" value="Read less"/>
         </div>
     </div>
+</div>
+
+<div class="card">
+    <h2>onToggle</h2>
+    <p class="log" id="log">No toggle yet.</p>
 </div>
 
 <div class="card">
@@ -170,6 +218,19 @@
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h2>Example D — custom classes</h2>
+        <button type="button" id="toggle-d">Toggle from JS</button>
+    </div>
+    <p class="excerpt-d" id="bio">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </p>
+</div>
+
+<div class="card">
     <h2>Short text (no button)</h2>
     <p class="excerpt-short">Text is too short to be truncated.</p>
 </div>
@@ -178,6 +239,16 @@
     import { ReadMore } from '/src/readmore.ts';
 
     let instances = [];
+    let toggleCount = 0;
+
+    const log = document.getElementById('log');
+
+    function onToggle(name) {
+        return (expanded) => {
+            toggleCount++;
+            log.textContent = `${name} → expanded: ${expanded} (${toggleCount} toggles)`;
+        };
+    }
 
     function reinit() {
         instances.forEach(rm => rm.destroy());
@@ -191,14 +262,26 @@
             ...ReadMore.init('.excerpt-a', {
                 lines: parseInt(document.getElementById('lines-a').value) || 2,
                 ...shared,
+                onToggle: onToggle('A'),
             }),
             ...ReadMore.init('.excerpt-b', {
                 lines: parseInt(document.getElementById('lines-b').value) || 4,
                 ...shared,
+                onToggle: onToggle('B'),
             }),
             ...ReadMore.init('.excerpt-c', {
                 height: parseInt(document.getElementById('height-c').value) || 60,
                 ...shared,
+                onToggle: onToggle('C'),
+            }),
+            ...ReadMore.init('.excerpt-d', {
+                lines: 2,
+                ...shared,
+                buttonClass: 'link-btn',
+                expandedClass: 'open',
+                openingClass: 'opening',
+                closingClass: 'closing',
+                onToggle: onToggle('D'),
             }),
             ...ReadMore.init('.excerpt-short', shared),
         ];
@@ -208,6 +291,11 @@
 
     document.querySelectorAll('.controls input, #lines-a, #lines-b, #height-c').forEach(input => {
         input.addEventListener('input', reinit);
+    });
+
+    // Instances are recreated on every reinit(), so look the current one up on click.
+    document.getElementById('toggle-d').addEventListener('click', () => {
+        ReadMore.getInstance(document.getElementById('bio'))?.toggle();
     });
 </script>
 </body>
