@@ -63,22 +63,36 @@ describe('ReadMore - constructor', () => {
     it('throws RangeError when lines is less than 1', () => {
         const el = makeEl();
 
-        expect(() => new ReadMore(el, { lines: 0 })).toThrow(RangeError);
-        expect(() => new ReadMore(el, { lines: -5 })).toThrow(RangeError);
+        expect(() => new ReadMore(el, {
+            lines: 0 
+        })).toThrow(RangeError);
+
+        expect(() => new ReadMore(el, {
+            lines: -5 
+        })).toThrow(RangeError);
     });
 
     it('throws RangeError when height is 0 or negative', () => {
         const el = makeEl();
 
-        expect(() => new ReadMore(el, { height: 0 })).toThrow(RangeError);
-        expect(() => new ReadMore(el, { height: -10 })).toThrow(RangeError);
+        expect(() => new ReadMore(el, {
+            height: 0 
+        })).toThrow(RangeError);
+
+        expect(() => new ReadMore(el, {
+            height: -10 
+        })).toThrow(RangeError);
     });
 
     it('accepts valid lines and height values', () => {
         const a = makeEl();
         const b = makeEl();
-        const rmA = new ReadMore(a, { lines: 1 });
-        const rmB = new ReadMore(b, { height: 1 });
+        const rmA = new ReadMore(a, {
+            lines: 1 
+        });
+        const rmB = new ReadMore(b, {
+            height: 1 
+        });
 
         expect(rmA.options.lines).toBe(1);
         expect(rmB.options.height).toBe(1);
@@ -272,7 +286,9 @@ describe('ReadMore - toggle()', () => {
     it('calls onToggle callback with the expanded state', () => {
         const onToggle = vi.fn();
         const el = makeEl(true);
-        const rm = new ReadMore(el, { onToggle });
+        const rm = new ReadMore(el, {
+            onToggle 
+        });
 
         rm.toggle();
         expect(onToggle).toHaveBeenCalledWith(true);
