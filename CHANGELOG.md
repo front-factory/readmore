@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.1](https://github.com/front-factory/readmore/compare/v1.3.0...v1.3.1) (2026-07-26)
+
+### Bug Fixes
+
+* keep css side effects so bundlers do not drop the stylesheet ([1a43c08](https://github.com/front-factory/readmore/commit/1a43c08fc0a83fc6a2bcb7021e08a52dd4b6090e))
+
 ## [1.3.0](https://github.com/front-factory/readmore/compare/v1.2.0...v1.3.0) (2026-05-24)
 
 ### Features
