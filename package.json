@@ -1,7 +1,7 @@
 {
     "name": "@frontfactory/readmore",
     "version": "1.3.0",
-    "description": "Lightweight plugin to clamp text to N lines with ellipsis and a read more action.",
+    "description": "Zero-dependency plugin to truncate text to N lines or a fixed height, with an ellipsis and an accessible read more / read less toggle.",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -12,18 +12,20 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
-        "prepare": "husky && npm run build",
+        "prepare": "husky",
+        "prepack": "npm run build",
         "release": "semantic-release"
     },
     "engines": {
-        "node": ">=20.19"
+        "node": ">=20"
     },
     "main": "./dist/readmore.js",
     "types": "./dist/readmore.d.ts",
     "exports": {
         ".": {
             "types": "./dist/readmore.d.ts",
-            "import": "./dist/readmore.js"
+            "import": "./dist/readmore.js",
+            "default": "./dist/readmore.js"
         },
         "./style.css": "./dist/readmore.css",
         "./package.json": "./package.json"
@@ -49,18 +51,22 @@
         "vite-plugin-static-copy": "^4.1.0",
         "vitest": "^4.1.5"
     },
-    "sideEffects": [
-        "**/*.css"
-    ],
-    "files": [
-        "dist"
-    ],
     "keywords": [
         "readmore",
+        "read-more",
+        "show-more",
+        "truncate",
+        "text-truncate",
+        "line-clamp",
+        "clamp",
+        "ellipsis",
         "expand",
         "collapse",
-        "front-end"
+        "typescript",
+        "vanilla-js",
+        "a11y"
     ],
+    "author": "Front Factory",
     "license": "MIT",
     "homepage": "https://github.com/front-factory/readmore",
     "bugs": {
@@ -70,6 +76,12 @@
         "type": "git",
         "url": "git+https://github.com/front-factory/readmore.git"
     },
+    "sideEffects": [
+        "**/*.css"
+    ],
+    "files": [
+        "dist"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
