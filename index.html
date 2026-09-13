@@ -98,6 +98,10 @@
             margin-left: auto;
         }
 
+        .card-header label + label {
+            margin-left: 0;
+        }
+
         .card-header input[type="number"] {
             width: 3.5rem;
             padding: 0.2rem 0.35rem;
@@ -169,16 +173,17 @@
 </div>
 
 <div class="card">
-    <h2>onToggle</h2>
+    <h2>Events</h2>
     <p class="log" id="log">No toggle yet.</p>
+    <p class="log" id="callback-log">Toggle example D to see its onToggle callback.</p>
 </div>
 
 <div class="card">
     <div class="card-header">
-        <h2>Example A</h2>
+        <h2>Example A — accessible labels</h2>
         <label>lines <input id="lines-a" type="number" min="1" max="20" value="2"/></label>
     </div>
-    <p class="excerpt-a">
+    <p class="excerpt-a" data-name="A">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
         ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -188,10 +193,11 @@
 
 <div class="card">
     <div class="card-header">
-        <h2>Example B</h2>
+        <h2>Example B — refresh()</h2>
+        <button type="button" id="swap-b">Swap text</button>
         <label>lines <input id="lines-b" type="number" min="1" max="20" value="4"/></label>
     </div>
-    <p class="excerpt-b">
+    <p class="excerpt-b" data-name="B">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
         ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -205,8 +211,9 @@
     <div class="card-header">
         <h2>Example C — height mode</h2>
         <label>height (px) <input id="height-c" type="number" min="20" max="500" value="60"/></label>
+        <label><input id="fade-c" type="checkbox"/> fade</label>
     </div>
-    <p class="excerpt-c">
+    <p class="excerpt-c" data-name="C">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
         ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -221,7 +228,7 @@
         <h2>Example D — custom classes</h2>
         <button type="button" id="toggle-d">Toggle from JS</button>
     </div>
-    <p class="excerpt-d" id="bio">
+    <p class="excerpt-d" id="bio" data-name="D">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
         ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
@@ -230,59 +237,91 @@
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h2>Example E — dynamic content</h2>
+        <button type="button" id="add-e">Add an excerpt</button>
+    </div>
+    <div id="feed"></div>
+</div>
+
+<div class="card">
     <h2>Short text (no button)</h2>
-    <p class="excerpt-short">Text is too short to be truncated.</p>
+    <p class="excerpt-short" data-name="Short">Text is too short to be truncated.</p>
 </div>
 
 <script type="module">
     import { ReadMore } from '/src/readmore.ts';
 
+    const LOREM = document.querySelector('.excerpt-b').textContent.trim();
+    const SHORT_TEXT = 'This text now fits, so the button is removed.';
+
     let instances = [];
     let toggleCount = 0;
+    let feedCount = 0;
 
     const log = document.getElementById('log');
+    const callbackLog = document.getElementById('callback-log');
+    const feed = document.getElementById('feed');
 
-    function onToggle(name) {
-        return (expanded) => {
-            toggleCount++;
-            log.textContent = `${name} → expanded: ${expanded} (${toggleCount} toggles)`;
+    // A single delegated listener logs the toggles of every instance.
+    document.addEventListener('readmore:toggle', (event) => {
+        const { expanded, instance } = event.detail;
+        const label = instance.el.nextElementSibling?.getAttribute('aria-label');
+
+        toggleCount++;
+        log.textContent = `readmore:toggle → ${instance.el.dataset.name} expanded: ${expanded} (${toggleCount} toggles)`
+            + (label ? ` — aria-label: "${label}"` : '');
+    });
+
+    function sharedOptions() {
+        return {
+            moreText: document.getElementById('moreText').value || 'Read more',
+            lessText: document.getElementById('lessText').value || 'Read less',
         };
+    }
+
+    // Only looks inside #feed. Already initialized excerpts keep their instance.
+    function initFeed() {
+        return ReadMore.init('.excerpt-e', {
+            lines: 2,
+            ...sharedOptions(),
+        }, feed);
     }
 
     function reinit() {
         instances.forEach(rm => rm.destroy());
 
-        const shared = {
-            moreText: document.getElementById('moreText').value || 'Read more',
-            lessText: document.getElementById('lessText').value || 'Read less',
-        };
+        const shared = sharedOptions();
 
         instances = [
             ...ReadMore.init('.excerpt-a', {
                 lines: parseInt(document.getElementById('lines-a').value) || 2,
                 ...shared,
-                onToggle: onToggle('A'),
+                moreLabel: `${shared.moreText} about example A`,
+                lessLabel: `${shared.lessText} about example A`,
             }),
             ...ReadMore.init('.excerpt-b', {
                 lines: parseInt(document.getElementById('lines-b').value) || 4,
                 ...shared,
-                onToggle: onToggle('B'),
             }),
             ...ReadMore.init('.excerpt-c', {
                 height: parseInt(document.getElementById('height-c').value) || 60,
                 ...shared,
-                onToggle: onToggle('C'),
             }),
-            ...ReadMore.init('.excerpt-d', {
+            // A single element works as well as a selector.
+            ...ReadMore.init(document.getElementById('bio'), {
                 lines: 2,
                 ...shared,
                 buttonClass: 'link-btn',
                 expandedClass: 'open',
                 openingClass: 'opening',
                 closingClass: 'closing',
-                onToggle: onToggle('D'),
+                onToggle: (expanded, instance) => {
+                    callbackLog.textContent = `onToggle → #${instance.el.id} expanded: ${expanded}`;
+                },
             }),
             ...ReadMore.init('.excerpt-short', shared),
+            ...initFeed(),
         ];
     }
 
@@ -295,6 +334,35 @@
     // Instances are recreated on every reinit(), so look the current one up on click.
     document.getElementById('toggle-d').addEventListener('click', () => {
         ReadMore.getInstance(document.getElementById('bio'))?.toggle();
+    });
+
+    // Resizes are tracked automatically; refresh() covers content changes.
+    document.getElementById('swap-b').addEventListener('click', () => {
+        const el = document.querySelector('.excerpt-b');
+
+        el.textContent = el.textContent === SHORT_TEXT ? LOREM : SHORT_TEXT;
+        ReadMore.getInstance(el)?.refresh();
+    });
+
+    // The fade is pure CSS: toggling the class is enough.
+    document.getElementById('fade-c').addEventListener('change', (event) => {
+        document.querySelector('.excerpt-c').classList.toggle('readmore-fade', event.target.checked);
+    });
+
+    // Re-running init() only creates instances for the new excerpts.
+    document.getElementById('add-e').addEventListener('click', () => {
+        const p = document.createElement('p');
+
+        p.className = 'excerpt-e';
+        p.dataset.name = `E${++feedCount}`;
+        p.textContent = `#${feedCount} — ${LOREM}`;
+        feed.appendChild(p);
+
+        for (const rm of initFeed()) {
+            if (!instances.includes(rm)) {
+                instances.push(rm);
+            }
+        }
     });
 </script>
 </body>
