@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [ 20, 22, 24 ]
+        node: [ 22, 24 ]
 
     # Superseded runs on the same branch are cancelled. The group includes the
     # matrix version so the legs of a single run never cancel each other.

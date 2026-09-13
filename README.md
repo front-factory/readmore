@@ -19,7 +19,7 @@ Lightweight, framework-agnostic plugin to clamp text to N lines (or a fixed pixe
 npm install @frontfactory/readmore
 ```
 
-Requires Node.js `>=20.19` to build from source. The published package runs in any modern browser supporting 
+Requires Node.js `^22.22.2 || >=24.15` to build from source. The published package runs in any modern browser supporting 
 `ResizeObserver`.
 
 ## Playground
