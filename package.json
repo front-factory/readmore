@@ -23,6 +23,8 @@
     },
     "main": "./dist/readmore.js",
     "types": "./dist/readmore.d.ts",
+    "unpkg": "./dist/readmore.iife.js",
+    "jsdelivr": "./dist/readmore.iife.js",
     "exports": {
         ".": {
             "types": "./dist/readmore.d.ts",

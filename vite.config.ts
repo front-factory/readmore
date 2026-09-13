@@ -7,10 +7,19 @@ export default defineConfig({
     build: {
         lib: {
             entry: 'src/readmore.ts',
-            fileName: 'readmore',
+            fileName: (format) => (format === 'iife' ? 'readmore.iife.js' : 'readmore.js'),
             formats: [
-                'es'
-            ]
+                'es',
+                'iife'
+            ],
+            // The IIFE (CDN build) exposes `FrontFactory.ReadMore`.
+            name: 'FrontFactory'
+        },
+        rolldownOptions: {
+            output: {
+                // Adds to an existing `FrontFactory` global instead of replacing it.
+                extend: true
+            }
         },
         minify: true,
         emptyOutDir: true

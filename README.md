@@ -22,6 +22,21 @@ npm install @frontfactory/readmore
 Requires Node.js `^22.22.2 || >=24.15` to build from source. The published package is shipped as untranspiled ES2022
 (private class members, logical assignment, `ResizeObserver`) and runs in Chrome/Edge 85+, Firefox 90+ and Safari 15+.
 
+### From a CDN
+
+Without a bundler, load the stylesheet and the IIFE build, which exposes `FrontFactory.ReadMore` (an existing
+`FrontFactory` global is extended, not replaced). Pin the major version in production:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frontfactory/readmore@1/dist/readmore.css">
+<script src="https://cdn.jsdelivr.net/npm/@frontfactory/readmore@1/dist/readmore.iife.js"></script>
+<script>
+    FrontFactory.ReadMore.init('.excerpt', {
+        lines: 3
+    });
+</script>
+```
+
 ## Playground
 
 Try it live on StackBlitz — no installation required:
