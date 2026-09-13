@@ -417,7 +417,7 @@ describe('ReadMore - transient state classes', () => {
             'getComputedStyle'
         );
         const spy = vi.spyOn(window, 'getComputedStyle').mockImplementation(
-            ((elt: Element) => {
+            (() => {
                 const proxy = {
                     transitionDuration: '0.3s' 
                 } as unknown as CSSStyleDeclaration;
