@@ -794,6 +794,7 @@ describe('ReadMore - button mounting based on overflow', () => {
         expect(btn.getAttribute('aria-expanded')).toBe('false');
         expect(btn.getAttribute('aria-controls')).toBe(el.id);
         expect(el.id).toMatch(/^readmore-\d+$/);
+        expect(btn.hasAttribute('aria-label')).toBe(false);
     });
 
     it('skips generated ids already used in the page', () => {
@@ -816,6 +817,31 @@ describe('ReadMore - button mounting based on overflow', () => {
 
         new ReadMore(second);
         expect(second.id).toBe(`readmore-${ n + 3 }`);
+    });
+
+    it('sets aria-label from moreLabel / lessLabel', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            moreLabel: 'Read more about A',
+            lessLabel: 'Read less about A'
+        });
+        const btn = el.nextElementSibling as HTMLButtonElement;
+
+        expect(btn.getAttribute('aria-label')).toBe('Read more about A');
+        rm.toggle();
+        expect(btn.getAttribute('aria-label')).toBe('Read less about A');
+        expect(btn.textContent).toBe('Read less');
+    });
+
+    it('drops aria-label in a state without a label', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            moreLabel: 'Read more about A'
+        });
+        const btn = el.nextElementSibling as HTMLButtonElement;
+
+        rm.toggle();
+        expect(btn.hasAttribute('aria-label')).toBe(false);
     });
 
     it('preserves an existing id on the element', () => {

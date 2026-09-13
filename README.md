@@ -118,6 +118,8 @@ useEffect(() => {
 | `height`        | `number`                                          | —                | Max height in pixels (min `1`). Takes precedence over `lines`.              |
 | `moreText`      | `string`                                          | `'Read more'`    | Label of the button when the text is collapsed.                             |
 | `lessText`      | `string`                                          | `'Read less'`    | Label of the button when the text is expanded.                              |
+| `moreLabel`     | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`.       |
+| `lessLabel`     | `string`                                          | —                | `aria-label` of the button when expanded. Should contain `lessText`.        |
 | `buttonClass`   | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                         |
 | `expandedClass` | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                         |
 | `openingClass`  | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.          |
@@ -157,6 +159,16 @@ The constructor throws instead of failing silently:
 When the button is mounted, it gets `aria-expanded` (kept in sync on every toggle) and `aria-controls`
 pointing to the target element. If the element has no `id`, a unique one (`readmore-1`, `readmore-2`, …, skipping ids
 already used in the page) is generated and removed again on `destroy()`; an existing `id` is always preserved.
+
+When several buttons share the same visible text, give each one a distinct accessible name with `moreLabel` and
+`lessLabel`. Keep the visible text inside the label so voice control users can still activate the button by its text:
+
+```ts
+new ReadMore(el, {
+    moreLabel: 'Read more about Product A',
+    lessLabel: 'Read less about Product A'
+});
+```
 
 ## How it works
 

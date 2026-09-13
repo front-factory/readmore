@@ -33,6 +33,19 @@ export interface ReadMoreOptions {
     lessText?: string;
 
     /**
+     * Accessible name (`aria-label`) of the toggle button while the text is
+     * collapsed, e.g. `'Read more about Product A'` when several buttons share
+     * the same visible text. It should contain {@link ReadMoreOptions.moreText}.
+     */
+    moreLabel?: string;
+
+    /**
+     * Accessible name (`aria-label`) of the toggle button while the text is
+     * expanded. It should contain {@link ReadMoreOptions.lessText}.
+     */
+    lessLabel?: string;
+
+    /**
      * Class applied to the toggle button.
      *
      * @defaultValue 'readmore-btn'
@@ -74,7 +87,7 @@ export interface ReadMoreOptions {
     onToggle?: (expanded: boolean, instance: ReadMore) => void;
 }
 
-type OptionalKeys = 'height' | 'onToggle';
+type OptionalKeys = 'height' | 'moreLabel' | 'lessLabel' | 'onToggle';
 
 /**
  * {@link ReadMoreOptions} merged with the defaults, as exposed on
@@ -251,14 +264,7 @@ export class ReadMore {
         }
 
         this.el.classList.toggle(this.options.expandedClass, this.#expanded);
-
-        if (this.#button) {
-            this.#button.textContent = this.#expanded
-                ? this.options.lessText
-                : this.options.moreText;
-
-            this.#button.setAttribute('aria-expanded', String(this.#expanded));
-        }
+        this.#updateButton();
 
         const stateClass = this.#expanded ? this.options.openingClass : this.options.closingClass;
         const otherClass = this.#expanded ? this.options.closingClass : this.options.openingClass;
@@ -406,12 +412,30 @@ export class ReadMore {
 
         btn.type = 'button';
         btn.className = this.options.buttonClass;
-        btn.textContent = this.options.moreText;
-        btn.setAttribute('aria-expanded', 'false');
         btn.setAttribute('aria-controls', this.el.id);
         btn.addEventListener('click', this.#onClick);
-        this.el.insertAdjacentElement('afterend', btn);
         this.#button = btn;
+        this.#updateButton();
+        this.el.insertAdjacentElement('afterend', btn);
+    }
+
+    /** Syncs the button's text, `aria-expanded` and `aria-label` with the state. */
+    #updateButton(): void {
+        if (!this.#button) {
+            return;
+        }
+
+        const { moreText, lessText, moreLabel, lessLabel } = this.options;
+        const label = this.#expanded ? lessLabel : moreLabel;
+
+        this.#button.textContent = this.#expanded ? lessText : moreText;
+        this.#button.setAttribute('aria-expanded', String(this.#expanded));
+
+        if (label) {
+            this.#button.setAttribute('aria-label', label);
+        } else {
+            this.#button.removeAttribute('aria-label');
+        }
     }
 
     #unmountButton(): void {
