@@ -132,6 +132,12 @@ export class ReadMore {
     #transientTimer: ReturnType<typeof setTimeout> | null = null;
     #onClick = (): void => this.toggle();
 
+    // Destroyed once the element is no longer bound to this instance: after
+    // destroy(), or if the element was re-initialized by another instance.
+    get #destroyed(): boolean {
+        return instances.get(this.el) !== this;
+    }
+
     /**
      * @param element - The element to clamp.
      * @param options - See {@link ReadMoreOptions}.
@@ -199,9 +205,13 @@ export class ReadMore {
     /**
      * Expands or collapses the text, updating the button label, the
      * `aria-expanded` attribute and the state classes, then calls
-     * {@link ReadMoreOptions.onToggle}.
+     * {@link ReadMoreOptions.onToggle}. Does nothing once destroyed.
      */
     toggle(): void {
+        if (this.#destroyed) {
+            return;
+        }
+
         this.#expanded = !this.#expanded;
         this.el.classList.toggle(CLAMP_CLASS, !this.#expanded);
 
@@ -238,9 +248,13 @@ export class ReadMore {
     /**
      * Restores the element: removes the button, the classes, the CSS custom
      * properties, the listeners and the generated `id`. The element can then be
-     * initialized again.
+     * initialized again. Calling it again does nothing.
      */
     destroy(): void {
+        if (this.#destroyed) {
+            return;
+        }
+
         instances.delete(this.el);
         this.#resizeObserver.disconnect();
 

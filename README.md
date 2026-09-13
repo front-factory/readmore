@@ -93,7 +93,7 @@ instance.el;            // the target element
 instance.options;       // resolved options
 instance.toggle();      // expand / collapse programmatically
 instance.expanded;      // boolean getter
-instance.destroy();     // remove button, classes, listeners and generated id
+instance.destroy();     // remove button, classes, listeners and generated id; toggle() is a no-op afterwards
 
 ReadMore.init(target, options);   // target: selector | NodeList | HTMLElement[] — returns ReadMore[]
 ReadMore.getInstance(element);    // returns the ReadMore bound to an element, or undefined

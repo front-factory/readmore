@@ -386,6 +386,35 @@ describe('ReadMore - destroy()', () => {
         rm.destroy();
         expect(resizeObserverDisconnect).toHaveBeenCalledOnce();
     });
+
+    it('toggle() does nothing once destroyed', () => {
+        const onToggle = vi.fn();
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            onToggle
+        });
+
+        rm.destroy();
+        rm.toggle();
+        expect(rm.expanded).toBe(false);
+        expect(el.className).toBe('');
+        expect(onToggle).not.toHaveBeenCalled();
+    });
+
+    it('a stale destroy() does not affect a newer instance on the same element', () => {
+        const el = makeEl(true);
+        const first = new ReadMore(el);
+
+        first.destroy();
+        const second = new ReadMore(el);
+
+        first.destroy();
+        first.toggle();
+        expect(ReadMore.getInstance(el)).toBe(second);
+        expect(el.classList.contains('readmore-clamp')).toBe(true);
+        expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+        expect(second.expanded).toBe(false);
+    });
 });
 
 describe('ReadMore - transient state classes', () => {
