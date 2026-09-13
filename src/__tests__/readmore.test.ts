@@ -483,6 +483,61 @@ describe('ReadMore - transient state classes', () => {
         expect(el.classList.contains('is-opening')).toBe(false);
     });
 
+    it('keeps the button while the collapse transition runs', () => {
+        vi.useFakeTimers();
+        mockTransition('0.35s', '0s');
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            height: 60
+        });
+        const btn = el.nextElementSibling as HTMLButtonElement;
+
+        rm.toggle(); // expand
+        vi.runAllTimers();
+        btn.focus();
+
+        // Right after collapsing, the element still has its expanded height.
+        setOverflow(el, false);
+        rm.toggle();
+        triggerResize();
+        expect(el.nextElementSibling).toBe(btn);
+        expect(document.activeElement).toBe(btn);
+
+        setOverflow(el, true);
+        vi.advanceTimersByTime(350);
+        expect(el.nextElementSibling).toBe(btn);
+        expect(document.activeElement).toBe(btn);
+    });
+
+    it('refreshes the button once the collapse transition ends', () => {
+        vi.useFakeTimers();
+        mockTransition('0.35s', '0s');
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        rm.toggle(); // expand
+        vi.runAllTimers();
+        setOverflow(el, false);
+        rm.toggle(); // collapse
+        expect(el.nextElementSibling).not.toBeNull();
+        vi.advanceTimersByTime(350);
+        expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('destroy() cancels a pending transient timer', () => {
+        vi.useFakeTimers();
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        rm.toggle(); // expand
+        vi.runAllTimers();
+        rm.toggle(); // collapse
+        rm.destroy();
+        vi.runAllTimers();
+        expect(el.nextElementSibling).toBeNull();
+        expect(el.className).toBe('');
+    });
+
     it('uses custom class names when provided', () => {
         vi.useFakeTimers();
         const el = makeEl(true);

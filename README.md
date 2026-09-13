@@ -129,8 +129,9 @@ fitting (or mounts it later if it starts overflowing).
 In addition to `expandedClass` (which stays applied for the entire expanded state), the plugin applies short-lived
 `openingClass` and `closingClass` markers on the target element at the moment of expand and collapse respectively. Each
 is added when the toggle starts and removed automatically once the longest CSS transition declared on the element
-(duration + delay) has elapsed — or on the next tick if no transition is declared. Use them as hooks to drive
-enter/leave animations:
+(duration + delay) has elapsed — or on the next tick if no transition is declared. The overflow check that mounts or
+unmounts the button waits for that moment too, so the button stays in place during a collapse animation. Use them as
+hooks to drive enter/leave animations:
 
 ```css
 .is-opening { 

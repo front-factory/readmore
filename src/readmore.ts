@@ -224,11 +224,6 @@ export class ReadMore {
 
         this.el.classList.remove(otherClass);
         this.#applyTransientClass(stateClass);
-
-        if (!this.#expanded) {
-            this.#refresh();
-        }
-
         this.options.onToggle?.(this.#expanded);
     }
 
@@ -290,7 +285,9 @@ export class ReadMore {
     }
 
     #refresh(): void {
-        if (this.#expanded) {
+        // While a toggle transition runs, the element's size is not final: measuring
+        // it mid-collapse would remove the button. The timer refreshes once it ends.
+        if (this.#expanded || this.#transientTimer !== null) {
             return;
         }
 
@@ -315,6 +312,7 @@ export class ReadMore {
         this.#transientTimer = setTimeout(() => {
             this.#transientTimer = null;
             this.el.classList.remove(stateClass);
+            this.#refresh();
         }, this.#transitionTime());
     }
 
