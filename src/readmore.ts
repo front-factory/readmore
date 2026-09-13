@@ -47,16 +47,18 @@ export interface ReadMoreOptions {
     expandedClass?: string;
 
     /**
-     * Transient class applied when expanding, removed once the CSS transition
-     * on the element ends — or on the next tick if no transition is declared.
+     * Transient class applied when expanding, removed once the longest CSS
+     * transition on the element (duration + delay) has elapsed — or on the next
+     * tick if no transition is declared.
      *
      * @defaultValue 'is-opening'
      */
     openingClass?: string;
 
     /**
-     * Transient class applied when collapsing, removed once the CSS transition
-     * on the element ends — or on the next tick if no transition is declared.
+     * Transient class applied when collapsing, removed once the longest CSS
+     * transition on the element (duration + delay) has elapsed — or on the next
+     * tick if no transition is declared.
      *
      * @defaultValue 'is-closing'
      */
@@ -96,6 +98,14 @@ const DEFAULTS: ResolvedOptions = {
 };
 
 /**
+ * Parses a computed `transition-duration` / `transition-delay` list into
+ * milliseconds. Computed times are always serialized in seconds.
+ */
+function toMs(list: string): number[] {
+    return list.split(',').map((v) => parseFloat(v) * 1000 || 0);
+}
+
+/**
  * Clamps an element to a number of lines (or a fixed height) and mounts a
  * `Read more` / `Read less` button right after it, but only while the content
  * actually overflows.
@@ -119,7 +129,7 @@ export class ReadMore {
     #expanded = false;
     #generatedId = false;
     #resizeObserver: ResizeObserver;
-    #transitionEndListener: ((e: TransitionEvent) => void) | null = null;
+    #transientTimer: ReturnType<typeof setTimeout> | null = null;
     #onClick = (): void => this.toggle();
 
     /**
@@ -239,9 +249,9 @@ export class ReadMore {
         instances.delete(this.el);
         this.#resizeObserver.disconnect();
 
-        if (this.#transitionEndListener) {
-            this.el.removeEventListener('transitionend', this.#transitionEndListener);
-            this.#transitionEndListener = null;
+        if (this.#transientTimer !== null) {
+            clearTimeout(this.#transientTimer);
+            this.#transientTimer = null;
         }
 
         this.#unmountButton();
@@ -294,36 +304,33 @@ export class ReadMore {
     }
 
     #applyTransientClass(stateClass: string): void {
-        if (this.#transitionEndListener) {
-            this.el.removeEventListener('transitionend', this.#transitionEndListener);
-            this.#transitionEndListener = null;
+        if (this.#transientTimer !== null) {
+            clearTimeout(this.#transientTimer);
         }
 
         this.el.classList.add(stateClass);
-        const remove = (): void => this.el.classList.remove(stateClass);
-        const duration = getComputedStyle(this.el).transitionDuration;
-        const hasTransition = duration
-            .split(',')
-            .some((d) => parseFloat(d) > 0);
 
-        if (!hasTransition) {
-            setTimeout(remove, 0);
+        // A timer rather than `transitionend`, which never fires when no declared
+        // property actually changes (e.g. `transition: all` in lines mode).
+        this.#transientTimer = setTimeout(() => {
+            this.#transientTimer = null;
+            this.el.classList.remove(stateClass);
+        }, this.#transitionTime());
+    }
 
-            return;
+    /** Longest `duration + delay` among the transitions declared on the element, in ms. */
+    #transitionTime(): number {
+        const style = getComputedStyle(this.el);
+        const durations = toMs(style.transitionDuration);
+        const delays = toMs(style.transitionDelay);
+        let max = 0;
+
+        // Shorter lists repeat to match the longer one, as CSS does.
+        for (let i = 0; i < Math.max(durations.length, delays.length); i++) {
+            max = Math.max(max, durations[i % durations.length] + delays[i % delays.length]);
         }
 
-        const onEnd = (e: TransitionEvent): void => {
-            if (e.target !== this.el) {
-                return;
-            }
-
-            this.el.removeEventListener('transitionend', onEnd);
-            this.#transitionEndListener = null;
-            remove();
-        };
-
-        this.#transitionEndListener = onEnd;
-        this.el.addEventListener('transitionend', onEnd);
+        return max;
     }
 
     #mountButton(): void {

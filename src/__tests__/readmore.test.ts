@@ -392,7 +392,15 @@ describe('ReadMore - transient state classes', () => {
     afterEach(() => {
         document.body.innerHTML = '';
         vi.useRealTimers();
+        vi.restoreAllMocks();
     });
+
+    function mockTransition(duration: string, delay: string): void {
+        vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+            transitionDuration: duration,
+            transitionDelay: delay
+        } as CSSStyleDeclaration);
+    }
 
     it('applies default opening/closing class names', () => {
         const el = makeEl();
@@ -451,41 +459,28 @@ describe('ReadMore - transient state classes', () => {
         expect(el.classList.contains('is-closing')).toBe(true);
     });
 
-    it('removes the transient class via transitionend when a transition is set', () => {
+    it('removes the transient class once the longest duration + delay has elapsed', () => {
+        vi.useFakeTimers();
+        mockTransition('0.1s, 0.3s', '0.1s');
         const el = makeEl(true);
-        // Simulate a non-zero transition duration via the prototype getter.
-        const original = Object.getOwnPropertyDescriptor(
-            window,
-            'getComputedStyle'
-        );
-        const spy = vi.spyOn(window, 'getComputedStyle').mockImplementation(
-            (() => {
-                const proxy = {
-                    transitionDuration: '0.3s' 
-                } as unknown as CSSStyleDeclaration;
-
-                return new Proxy(proxy, {
-                    get(target, prop) {
-                        if (prop in target) {
-                            return (target as unknown as Record<string | symbol, unknown>)[prop as string];
-                        }
-
-                        return '';
-                    }
-                });
-            }) as typeof window.getComputedStyle
-        );
         const rm = new ReadMore(el);
 
         rm.toggle();
+        vi.advanceTimersByTime(399);
         expect(el.classList.contains('is-opening')).toBe(true);
-        el.dispatchEvent(new Event('transitionend'));
+        vi.advanceTimersByTime(1);
         expect(el.classList.contains('is-opening')).toBe(false);
-        spy.mockRestore();
+    });
 
-        if (original) {
-            Object.defineProperty(window, 'getComputedStyle', original);
-        }
+    it('removes the transient class even if no transitionend event ever fires', () => {
+        vi.useFakeTimers();
+        mockTransition('0.3s', '0s');
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        rm.toggle();
+        vi.advanceTimersByTime(300);
+        expect(el.classList.contains('is-opening')).toBe(false);
     });
 
     it('uses custom class names when provided', () => {
