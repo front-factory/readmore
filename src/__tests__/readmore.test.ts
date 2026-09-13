@@ -753,6 +753,28 @@ describe('ReadMore - button mounting based on overflow', () => {
         expect(el.id).toMatch(/^readmore-\d+$/);
     });
 
+    it('skips generated ids already used in the page', () => {
+        const first = makeEl(true);
+
+        new ReadMore(first);
+        const n = Number(first.id.split('-')[1]);
+
+        for (const offset of [
+            1,
+            2
+        ]) {
+            const taken = document.createElement('div');
+
+            taken.id = `readmore-${ n + offset }`;
+            document.body.appendChild(taken);
+        }
+
+        const second = makeEl(true);
+
+        new ReadMore(second);
+        expect(second.id).toBe(`readmore-${ n + 3 }`);
+    });
+
     it('preserves an existing id on the element', () => {
         const el = makeEl(true);
 

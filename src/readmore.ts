@@ -386,7 +386,14 @@ export class ReadMore {
 
     #mountButton(): void {
         if (!this.el.id) {
-            this.el.id = `readmore-${++idCounter}`;
+            let id: string;
+
+            // Skip ids already used in the page (server-rendered markup, another copy of the plugin…).
+            do {
+                id = `readmore-${++idCounter}`;
+            } while (document.getElementById(id));
+
+            this.el.id = id;
             this.#generatedId = true;
         }
 

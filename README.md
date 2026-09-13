@@ -149,8 +149,8 @@ The constructor throws instead of failing silently:
 ## Accessibility
 
 When the button is mounted, it gets `aria-expanded` (kept in sync on every toggle) and `aria-controls`
-pointing to the target element. If the element has no `id`, a unique one (`readmore-1`, `readmore-2`, …)
-is generated and removed again on `destroy()`; an existing `id` is always preserved.
+pointing to the target element. If the element has no `id`, a unique one (`readmore-1`, `readmore-2`, …, skipping ids
+already used in the page) is generated and removed again on `destroy()`; an existing `id` is always preserved.
 
 ## How it works
 
