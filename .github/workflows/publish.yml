@@ -68,12 +68,21 @@ jobs:
       - name: Tests
         run: npm run test
 
+      # Real-browser tests don't depend on the Node version either.
+      - name: Install Playwright Chromium
+        if: matrix.node == 24
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser Tests
+        if: matrix.node == 24
+        run: npm run test:browser
+
       - name: Tests Reporter
         uses: dorny/test-reporter@v3
         if: always()
         with:
           name: Tests (Node ${{ matrix.node }})
-          path: junit.xml
+          path: junit*.xml
           reporter: java-junit
 
   publish:
