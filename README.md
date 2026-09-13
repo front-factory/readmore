@@ -73,6 +73,14 @@ if (el) new ReadMore(el, {
 });
 ```
 
+If you change the content without changing the element's size (resizes are already tracked), call `refresh()` so the
+button is mounted or removed as needed:
+
+```ts
+instance.el.textContent = newText;
+instance.refresh();
+```
+
 ### With a framework
 
 The instance holds a `ResizeObserver` and a button outside the element, so call `destroy()` when the component
@@ -111,6 +119,7 @@ instance.el;            // the target element
 instance.options;       // resolved options (read-only)
 instance.toggle();      // expand / collapse programmatically
 instance.expanded;      // boolean getter
+instance.refresh();     // re-check the overflow after a content change
 instance.destroy();     // remove button, classes, listeners and generated id; toggle() is a no-op afterwards
 
 ReadMore.init(target, options);   // target: selector | NodeList | HTMLElement[] — returns ReadMore[], reusing existing instances

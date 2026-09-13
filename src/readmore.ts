@@ -173,7 +173,7 @@ export class ReadMore {
             throw new RangeError('ReadMore: lines must be an integer of at least 1.');
         }
 
-        this.#resizeObserver = new ResizeObserver(() => this.#refresh());
+        this.#resizeObserver = new ResizeObserver(() => this.refresh());
         instances.set(element, this);
         this.#init();
     }
@@ -241,6 +241,28 @@ export class ReadMore {
     }
 
     /**
+     * Checks again whether the content overflows, mounting or unmounting the
+     * button. Resizes of the element are already tracked; call it after
+     * changing the content in a way that keeps the element's size. Does nothing
+     * while expanded, during a toggle transition, or once destroyed.
+     */
+    refresh(): void {
+        // While a toggle transition runs, the element's size is not final: measuring
+        // it mid-collapse would remove the button. The timer refreshes once it ends.
+        if (this.#expanded || this.#transientTimer !== null || this.#destroyed) {
+            return;
+        }
+
+        const overflowing = this.#isOverflowing();
+
+        if (overflowing && !this.#button) {
+            this.#mountButton();
+        } else if (!overflowing && this.#button) {
+            this.#unmountButton();
+        }
+    }
+
+    /**
      * @param element - An element possibly initialized by this plugin.
      * @returns The instance bound to it, or `undefined`.
      */
@@ -294,27 +316,11 @@ export class ReadMore {
         }
 
         this.#resizeObserver.observe(this.el);
-        this.#refresh();
+        this.refresh();
     }
 
     #isOverflowing(): boolean {
         return this.el.scrollHeight - this.el.clientHeight > 1;
-    }
-
-    #refresh(): void {
-        // While a toggle transition runs, the element's size is not final: measuring
-        // it mid-collapse would remove the button. The timer refreshes once it ends.
-        if (this.#expanded || this.#transientTimer !== null) {
-            return;
-        }
-
-        const overflowing = this.#isOverflowing();
-
-        if (overflowing && !this.#button) {
-            this.#mountButton();
-        } else if (!overflowing && this.#button) {
-            this.#unmountButton();
-        }
     }
 
     #applyTransientClass(stateClass: string): void {
@@ -329,7 +335,7 @@ export class ReadMore {
         this.#transientTimer = setTimeout(() => {
             this.#transientTimer = null;
             this.el.classList.remove(stateClass);
-            this.#refresh();
+            this.refresh();
         }, this.#transitionTime());
     }
 

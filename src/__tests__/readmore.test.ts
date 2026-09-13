@@ -785,4 +785,26 @@ describe('ReadMore - button mounting based on overflow', () => {
         triggerResize();
         expect(el.nextElementSibling).not.toBeNull();
     });
+
+    it('refresh() re-checks the overflow without a resize', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        setOverflow(el, false);
+        rm.refresh();
+        expect(el.nextElementSibling).toBeNull();
+
+        setOverflow(el, true);
+        rm.refresh();
+        expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+    });
+
+    it('refresh() does nothing once destroyed', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        rm.destroy();
+        rm.refresh();
+        expect(el.nextElementSibling).toBeNull();
+    });
 });
