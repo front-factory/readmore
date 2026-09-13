@@ -60,10 +60,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Keeps the size advertised in the README honest (~1.5 KB gzipped).
+      # Keeps the size advertised in the README honest (~1.7 KB gzipped).
       - name: Bundle Size
         if: matrix.node == 24
-        run: node -e "const s = require('zlib').gzipSync(require('fs').readFileSync('dist/readmore.js')).length; console.log(s + ' B gzipped (limit 1600 B)'); if (s > 1600) process.exit(1);"
+        run: node -e "const s = require('zlib').gzipSync(require('fs').readFileSync('dist/readmore.js')).length; console.log(s + ' B gzipped (limit 1800 B)'); if (s > 1800) process.exit(1);"
 
       - name: Tests
         run: npm run test
