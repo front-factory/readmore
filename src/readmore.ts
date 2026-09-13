@@ -205,19 +205,24 @@ export class ReadMore {
      * already initialized are left untouched and their existing instance is
      * returned, so it is safe to call again after new content is added.
      *
-     * @param target - A CSS selector, a `NodeList` or an array of elements.
+     * @param target - A CSS selector, an element, or any iterable or array-like
+     * of elements (`NodeList`, `HTMLCollection`, array, `Set`…).
      * @param options - See {@link ReadMoreOptions}. Not applied to elements
      * that are already initialized.
+     * @param root - Where to look for `target` when it is a selector.
      * @returns One instance per element, in document order.
      */
     static init(
-        target: string | NodeListOf<HTMLElement> | HTMLElement[],
-        options?: ReadMoreOptions
+        target: string | HTMLElement | Iterable<HTMLElement> | ArrayLike<HTMLElement>,
+        options?: ReadMoreOptions,
+        root: ParentNode = document
     ): ReadMore[] {
         const nodes =
             typeof target === 'string'
-                ? document.querySelectorAll<HTMLElement>(target)
-                : target;
+                ? root.querySelectorAll<HTMLElement>(target)
+                : target instanceof HTMLElement ? [
+                    target
+                ] : target;
 
         return Array.from(nodes).map((n) => instances.get(n) ?? new ReadMore(n, options));
     }

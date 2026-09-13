@@ -51,12 +51,18 @@ ReadMore.init('.excerpt', {
 });
 ```
 
-`ReadMore.init()` also accepts a `NodeList` or an array of elements:
+`ReadMore.init()` also accepts an element, or any iterable or array-like of elements (`NodeList`, `HTMLCollection`,
+array, `Set`…). A third argument restricts a selector to a container:
 
 ```ts
 ReadMore.init(document.querySelectorAll<HTMLElement>('.excerpt'), {
     lines: 3
 });
+
+// only the excerpts inside #news
+ReadMore.init('.excerpt', {
+    lines: 3
+}, document.querySelector('#news')!);
 ```
 
 Calling `ReadMore.init()` again is safe: elements that are already initialized keep their instance (and its options) and
@@ -130,8 +136,8 @@ instance.expanded;      // boolean getter
 instance.refresh();     // re-check the overflow after a content change
 instance.destroy();     // remove button, classes, listeners and generated id; toggle() is a no-op afterwards
 
-ReadMore.init(target, options);   // target: selector | NodeList | HTMLElement[] — returns ReadMore[], reusing existing instances
-ReadMore.getInstance(element);    // returns the ReadMore bound to an element, or undefined
+ReadMore.init(target, options, root);  // target: selector | element | iterable of elements — returns ReadMore[], reusing existing instances
+ReadMore.getInstance(element);         // returns the ReadMore bound to an element, or undefined
 
 // event: 'readmore:toggle' (bubbles) — event.detail: { expanded, instance }
 ```

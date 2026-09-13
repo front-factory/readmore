@@ -678,6 +678,49 @@ describe('ReadMore.init - static', () => {
         expect(result).toHaveLength(1);
     });
 
+    it('accepts a single element, an HTMLCollection and any iterable', () => {
+        const a = makeEl();
+        const b = makeEl();
+        const c = makeEl();
+
+        b.classList.add('rm-col');
+
+        expect(ReadMore.init(a)).toEqual([
+            ReadMore.getInstance(a)
+        ]);
+
+        expect(ReadMore.init(document.getElementsByClassName('rm-col') as HTMLCollectionOf<HTMLElement>)).toEqual([
+            ReadMore.getInstance(b)
+        ]);
+
+        expect(ReadMore.init(new Set([
+            c
+        ]))).toEqual([
+            ReadMore.getInstance(c)
+        ]);
+
+        expect(ReadMore.getInstance(c)).toBeInstanceOf(ReadMore);
+    });
+
+    it('only looks for the selector inside root', () => {
+        const container = document.createElement('section');
+        const inside = makeEl();
+        const outside = makeEl();
+
+        inside.classList.add('rm-root');
+        outside.classList.add('rm-root');
+        container.appendChild(inside);
+        document.body.appendChild(container);
+
+        const result = ReadMore.init('.rm-root', {}, container);
+
+        expect(result).toEqual([
+            ReadMore.getInstance(inside)
+        ]);
+
+        expect(ReadMore.getInstance(outside)).toBeUndefined();
+    });
+
     it('returns an empty array when nothing matches', () => {
         const result = ReadMore.init('.does-not-exist');
 
