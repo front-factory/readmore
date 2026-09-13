@@ -64,7 +64,9 @@ jobs:
       # ES module and the IIFE (CDN) build.
       - name: Bundle Size
         if: matrix.node == 24
-        run: node -e "for (const f of ['dist/readmore.js', 'dist/readmore.iife.js']) { const s = require('zlib').gzipSync(require('fs').readFileSync(f)).length; console.log(f + ': ' + s + ' B gzipped (limit 1800 B)'); if (s > 1800) process.exitCode = 1; }"
+        # Block scalar: the script contains ": ", which breaks a plain YAML value.
+        run: |
+          node -e "for (const f of ['dist/readmore.js', 'dist/readmore.iife.js']) { const s = require('zlib').gzipSync(require('fs').readFileSync(f)).length; console.log(f + ': ' + s + ' B gzipped (limit 1800 B)'); if (s > 1800) process.exitCode = 1; }"
 
       - name: Tests
         run: npm run test
