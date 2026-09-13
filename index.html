@@ -173,7 +173,11 @@
 </div>
 
 <div class="card">
-    <h2>Events</h2>
+    <div class="card-header">
+        <h2>Events</h2>
+        <button type="button" id="expand-all">Expand all</button>
+        <button type="button" id="collapse-all">Collapse all</button>
+    </div>
     <p class="log" id="log">No toggle yet.</p>
     <p class="log" id="callback-log">Toggle example D to see its onToggle callback.</p>
 </div>
@@ -334,6 +338,15 @@
     // Instances are recreated on every reinit(), so look the current one up on click.
     document.getElementById('toggle-d').addEventListener('click', () => {
         ReadMore.getInstance(document.getElementById('bio'))?.toggle();
+    });
+
+    // toggle(true / false) forces a state: instances already in it are left untouched.
+    document.getElementById('expand-all').addEventListener('click', () => {
+        instances.forEach(rm => rm.toggle(true));
+    });
+
+    document.getElementById('collapse-all').addEventListener('click', () => {
+        instances.forEach(rm => rm.toggle(false));
     });
 
     // Resizes are tracked automatically; refresh() covers content changes.
