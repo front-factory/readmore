@@ -108,7 +108,7 @@ useEffect(() => {
 const instance = new ReadMore(element, options);
 
 instance.el;            // the target element
-instance.options;       // resolved options
+instance.options;       // resolved options (read-only)
 instance.toggle();      // expand / collapse programmatically
 instance.expanded;      // boolean getter
 instance.destroy();     // remove button, classes, listeners and generated id; toggle() is a no-op afterwards

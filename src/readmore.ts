@@ -123,7 +123,7 @@ export class ReadMore {
     readonly el: HTMLElement;
 
     /** The options this instance was built with, merged with the defaults. */
-    readonly options: ResolvedOptions;
+    readonly options: Readonly<ResolvedOptions>;
 
     #button: HTMLButtonElement | null = null;
     #expanded = false;

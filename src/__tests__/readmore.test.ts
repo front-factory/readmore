@@ -179,6 +179,13 @@ describe('ReadMore - constructor', () => {
         expect(rm.options.height).toBeUndefined();
     });
 
+    it('types the resolved options as readonly', () => {
+        const rm = new ReadMore(makeEl());
+
+        // @ts-expect-error - checked by `tsc`: options are read-only.
+        expect(() => (rm.options.lines = 5)).not.toThrow();
+    });
+
     it('merges custom options over defaults', () => {
         const el = makeEl();
         const rm = new ReadMore(el, {
