@@ -73,6 +73,14 @@ if (el) new ReadMore(el, {
 });
 ```
 
+Each toggle also dispatches a bubbling `readmore:toggle` event on the element, handy for event delegation:
+
+```ts
+document.addEventListener('readmore:toggle', (event) => {
+    const { expanded, instance } = event.detail;
+});
+```
+
 If you change the content without changing the element's size (resizes are already tracked), call `refresh()` so the
 button is mounted or removed as needed:
 
@@ -98,17 +106,17 @@ useEffect(() => {
 
 ## Options
 
-| Option          | Type                          | Default          | Description                                                         |
-|-----------------|-------------------------------|------------------|---------------------------------------------------------------------|
-| `lines`         | `number`                      | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set.  |
-| `height`        | `number`                      | —                | Max height in pixels (min `1`). Takes precedence over `lines`.      |
-| `moreText`      | `string`                      | `'Read more'`    | Label of the button when the text is collapsed.                     |
-| `lessText`      | `string`                      | `'Read less'`    | Label of the button when the text is expanded.                      |
-| `buttonClass`   | `string`                      | `'readmore-btn'` | Class applied to the toggle button.                                 |
-| `expandedClass` | `string`                      | `'is-expanded'`  | Class applied to the target element while expanded.                 |
-| `openingClass`  | `string`                      | `'is-opening'`   | Transient class applied while expanding, removed after transition.  |
-| `closingClass`  | `string`                      | `'is-closing'`   | Transient class applied while collapsing, removed after transition. |
-| `onToggle`      | `(expanded: boolean) => void` | —                | Callback fired after each toggle with the current `expanded` state. |
+| Option          | Type                                              | Default          | Description                                                                 |
+|-----------------|---------------------------------------------------|------------------|-----------------------------------------------------------------------------|
+| `lines`         | `number`                                          | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set.          |
+| `height`        | `number`                                          | —                | Max height in pixels (min `1`). Takes precedence over `lines`.              |
+| `moreText`      | `string`                                          | `'Read more'`    | Label of the button when the text is collapsed.                             |
+| `lessText`      | `string`                                          | `'Read less'`    | Label of the button when the text is expanded.                              |
+| `buttonClass`   | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                         |
+| `expandedClass` | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                         |
+| `openingClass`  | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.          |
+| `closingClass`  | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.         |
+| `onToggle`      | `(expanded: boolean, instance: ReadMore) => void` | —                | Callback fired after each toggle, before the `readmore:toggle` event.       |
 
 ## API
 
@@ -124,6 +132,8 @@ instance.destroy();     // remove button, classes, listeners and generated id; t
 
 ReadMore.init(target, options);   // target: selector | NodeList | HTMLElement[] — returns ReadMore[], reusing existing instances
 ReadMore.getInstance(element);    // returns the ReadMore bound to an element, or undefined
+
+// event: 'readmore:toggle' (bubbles) — event.detail: { expanded, instance }
 ```
 
 ### Errors

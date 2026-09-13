@@ -65,21 +65,43 @@ export interface ReadMoreOptions {
     closingClass?: string;
 
     /**
-     * Called after each toggle with the resulting state.
+     * Called after each toggle with the resulting state, right before the
+     * `readmore:toggle` event is dispatched.
      *
      * @param expanded - `true` once expanded, `false` once collapsed.
+     * @param instance - The instance that was toggled.
      */
-    onToggle?: (expanded: boolean) => void;
+    onToggle?: (expanded: boolean, instance: ReadMore) => void;
 }
+
+type OptionalKeys = 'height' | 'onToggle';
 
 /**
  * {@link ReadMoreOptions} merged with the defaults, as exposed on
  * {@link ReadMore.options}.
  */
-export type ResolvedOptions = Required<Omit<ReadMoreOptions, 'height' | 'onToggle'>> & {
-    height?: number;
-    onToggle?: (expanded: boolean) => void;
-};
+export type ResolvedOptions = Required<Omit<ReadMoreOptions, OptionalKeys>> & Pick<ReadMoreOptions, OptionalKeys>;
+
+/** `detail` of the `readmore:toggle` event. */
+export interface ReadMoreToggleDetail {
+    /** `true` once expanded, `false` once collapsed. */
+    expanded: boolean;
+
+    /** The instance that was toggled. */
+    instance: ReadMore;
+}
+
+// Types `event.detail` in `addEventListener('readmore:toggle', …)`, on elements
+// and on `document` (the event bubbles).
+declare global {
+    interface HTMLElementEventMap {
+        'readmore:toggle': CustomEvent<ReadMoreToggleDetail>;
+    }
+
+    interface DocumentEventMap {
+        'readmore:toggle': CustomEvent<ReadMoreToggleDetail>;
+    }
+}
 
 const CLAMP_CLASS = 'readmore-clamp';
 const CLAMP_HEIGHT_CLASS = 'readmore-clamp--height';
@@ -208,7 +230,8 @@ export class ReadMore {
     /**
      * Expands or collapses the text, updating the button label, the
      * `aria-expanded` attribute and the state classes, then calls
-     * {@link ReadMoreOptions.onToggle}. Does nothing once destroyed.
+     * {@link ReadMoreOptions.onToggle} and dispatches a bubbling
+     * `readmore:toggle` event on the element. Does nothing once destroyed.
      */
     toggle(): void {
         if (this.#destroyed) {
@@ -237,7 +260,14 @@ export class ReadMore {
 
         this.el.classList.remove(otherClass);
         this.#applyTransientClass(stateClass);
-        this.options.onToggle?.(this.#expanded);
+        this.options.onToggle?.(this.#expanded, this);
+        this.el.dispatchEvent(new CustomEvent<ReadMoreToggleDetail>('readmore:toggle', {
+            bubbles: true,
+            detail: {
+                expanded: this.#expanded,
+                instance: this
+            }
+        }));
     }
 
     /**

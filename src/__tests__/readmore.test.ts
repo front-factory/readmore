@@ -340,12 +340,43 @@ describe('ReadMore - toggle()', () => {
         });
 
         rm.toggle();
-        expect(onToggle).toHaveBeenCalledWith(true);
+        expect(onToggle).toHaveBeenCalledWith(true, rm);
 
         rm.toggle();
-        expect(onToggle).toHaveBeenCalledWith(false);
+        expect(onToggle).toHaveBeenCalledWith(false, rm);
 
         expect(onToggle).toHaveBeenCalledTimes(2);
+    });
+
+    it('dispatches a bubbling readmore:toggle event after onToggle', () => {
+        const calls: string[] = [];
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            onToggle: () => calls.push('callback')
+        });
+        const events: Event[] = [];
+        // `DocumentEventMap['readmore:toggle']` and the inferred `e` on the element
+        // listener only type-check thanks to the global event map augmentation.
+        const listener = (e: DocumentEventMap['readmore:toggle']): void => {
+            events.push(e);
+            calls.push(`event:${ e.detail.expanded }`);
+        };
+
+        document.addEventListener('readmore:toggle', listener);
+        el.addEventListener('readmore:toggle', (e) => e.detail.instance);
+        rm.toggle();
+        rm.toggle();
+        document.removeEventListener('readmore:toggle', listener);
+
+        expect(calls).toEqual([
+            'callback',
+            'event:true',
+            'callback',
+            'event:false'
+        ]);
+
+        expect(events[0].target).toBe(el);
+        expect((events[0] as CustomEvent).detail.instance).toBe(rm);
     });
 
     it('does not throw when onToggle is not provided', () => {
