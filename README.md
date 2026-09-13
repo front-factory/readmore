@@ -7,7 +7,7 @@
 Lightweight, framework-agnostic plugin to clamp text to N lines (or a fixed pixel height) with an ellipsis and a
 `Read more` / `Read less` toggle button.
 
-- Zero dependencies, ~1.3 KB gzipped
+- Zero dependencies, ~1.5 KB gzipped
 - TypeScript types included
 - CSS-driven clamping via `-webkit-line-clamp` or `max-height`
 - The toggle button is only created when the text actually overflows
