@@ -97,8 +97,8 @@ instance.refresh();
 
 ### With a framework
 
-The instance holds a `ResizeObserver` and a button outside the element, so call `destroy()` when the component
-unmounts. For example with React:
+The instance holds a button outside the element and is watched by a `ResizeObserver`, so call `destroy()` when the
+component unmounts. For example with React:
 
 ```tsx
 useEffect(() => {
@@ -176,8 +176,9 @@ The plugin sets a CSS custom property on the target element and toggles `.readmo
 it sets `--readmore-lines` and the bundled stylesheet applies `-webkit-line-clamp`, producing an ellipsis at the end of
 the last visible line. In **height mode** (`height` option), it sets `--readmore-height` and applies `max-height` via
 the `.readmore-clamp--height` modifier class instead. The toggle button is mounted right after the element only when the
-content actually overflows; a `ResizeObserver` watches the element and unmounts the button again if the text ends up
-fitting (or mounts it later if it starts overflowing).
+content actually overflows; a single `ResizeObserver`, shared by every instance, watches the elements and unmounts the
+button again if the text ends up fitting (or mounts it later if it starts overflowing). All resized elements are
+measured before any button is added or removed, to avoid a layout per element.
 
 ### Transient classes for animations
 

@@ -154,6 +154,9 @@ function toMs(list: string): number[] {
  * ```
  */
 export class ReadMore {
+    /** Shared by every instance, created with the first one. */
+    static #resizeObserver: ResizeObserver | undefined;
+
     /** The clamped element. */
     readonly el: HTMLElement;
 
@@ -163,7 +166,6 @@ export class ReadMore {
     #button: HTMLButtonElement | null = null;
     #expanded = false;
     #generatedId = false;
-    #resizeObserver: ResizeObserver;
     #transientTimer: ReturnType<typeof setTimeout> | null = null;
     #onClick = (): void => this.toggle();
 
@@ -208,7 +210,6 @@ export class ReadMore {
             throw new RangeError('ReadMore: lines must be an integer of at least 1.');
         }
 
-        this.#resizeObserver = new ResizeObserver(() => this.refresh());
         instances.set(element, this);
         this.#init();
     }
@@ -288,19 +289,7 @@ export class ReadMore {
      * while expanded, during a toggle transition, or once destroyed.
      */
     refresh(): void {
-        // While a toggle transition runs, the element's size is not final: measuring
-        // it mid-collapse would remove the button. The timer refreshes once it ends.
-        if (this.#expanded || this.#transientTimer !== null || this.#destroyed) {
-            return;
-        }
-
-        const overflowing = this.#isOverflowing();
-
-        if (overflowing && !this.#button) {
-            this.#mountButton();
-        } else if (!overflowing && this.#button) {
-            this.#unmountButton();
-        }
+        this.#sync(this.#isOverflowing());
     }
 
     /**
@@ -322,7 +311,7 @@ export class ReadMore {
         }
 
         instances.delete(this.el);
-        this.#resizeObserver.disconnect();
+        ReadMore.#resizeObserver?.unobserve(this.el);
 
         if (this.#transientTimer !== null) {
             clearTimeout(this.#transientTimer);
@@ -347,6 +336,22 @@ export class ReadMore {
         }
     }
 
+    // Measures every resized element before touching the DOM, so mounting a
+    // button does not force a new layout for each following element.
+    static #onResize(entries: ResizeObserverEntry[]): void {
+        const measured = new Map<ReadMore, boolean>();
+
+        for (const entry of entries) {
+            const instance = instances.get(entry.target as HTMLElement);
+
+            if (instance) {
+                measured.set(instance, instance.#isOverflowing());
+            }
+        }
+
+        measured.forEach((overflowing, instance) => instance.#sync(overflowing));
+    }
+
     #init(): void {
         if (this.options.height != null) {
             this.el.style.setProperty('--readmore-height', `${ this.options.height }px`);
@@ -356,12 +361,27 @@ export class ReadMore {
             this.el.classList.add(CLAMP_CLASS);
         }
 
-        this.#resizeObserver.observe(this.el);
+        ReadMore.#resizeObserver ??= new ResizeObserver(ReadMore.#onResize);
+        ReadMore.#resizeObserver.observe(this.el);
         this.refresh();
     }
 
     #isOverflowing(): boolean {
         return this.el.scrollHeight - this.el.clientHeight > 1;
+    }
+
+    #sync(overflowing: boolean): void {
+        // While a toggle transition runs, the element's size is not final: measuring
+        // it mid-collapse would remove the button. The timer refreshes once it ends.
+        if (this.#expanded || this.#transientTimer !== null || this.#destroyed) {
+            return;
+        }
+
+        if (overflowing && !this.#button) {
+            this.#mountButton();
+        } else if (!overflowing && this.#button) {
+            this.#unmountButton();
+        }
     }
 
     #applyTransientClass(stateClass: string): void {

@@ -1,26 +1,31 @@
 import {
-    afterEach, beforeEach, describe, expect, it, vi 
+    afterEach, describe, expect, it, vi
 } from 'vitest';
 import { ReadMore } from '../readmore';
 
-let triggerResize: () => void;
-let resizeObserverDisconnect: ReturnType<typeof vi.fn>;
+/**
+ * jsdom has no ResizeObserver. The plugin creates a single one, shared by every
+ * instance and kept across tests, so the stub is installed once and records the
+ * observed elements; triggerResize() reports all of them as resized.
+ */
+const observed = new Set<Element>();
+const resizeObservers: unknown[] = [];
+const unobserve = vi.fn((el: Element) => observed.delete(el));
+let triggerResize: () => void = () => {};
 
-beforeEach(() => {
-    resizeObserverDisconnect = vi.fn();
-    const disconnect = resizeObserverDisconnect;
+vi.stubGlobal('ResizeObserver', class {
+    constructor(cb: ResizeObserverCallback) {
+        resizeObservers.push(this);
+        triggerResize = () => cb(
+            Array.from(observed, (target) => ({
+                target
+            }) as ResizeObserverEntry),
+            this as unknown as ResizeObserver
+        );
+    }
 
-    vi.stubGlobal('ResizeObserver', class {
-        constructor(cb: ResizeObserverCallback) {
-            triggerResize = () => cb([], this as unknown as ResizeObserver);
-        }
-        observe = vi.fn();
-        disconnect = disconnect;
-    });
-});
-
-afterEach(() => {
-    vi.unstubAllGlobals();
+    observe = (el: Element) => observed.add(el);
+    unobserve = unobserve;
 });
 
 /**
@@ -417,12 +422,14 @@ describe('ReadMore - destroy()', () => {
         expect(el.nextElementSibling).toBeNull();
     });
 
-    it('disconnects the ResizeObserver on destroy', () => {
+    it('stops observing the element on destroy', () => {
         const el = makeEl();
         const rm = new ReadMore(el);
 
+        expect(observed.has(el)).toBe(true);
         rm.destroy();
-        expect(resizeObserverDisconnect).toHaveBeenCalledOnce();
+        expect(unobserve).toHaveBeenCalledWith(el);
+        expect(observed.has(el)).toBe(false);
     });
 
     it('toggle() does nothing once destroyed', () => {
@@ -928,5 +935,53 @@ describe('ReadMore - button mounting based on overflow', () => {
         rm.destroy();
         rm.refresh();
         expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('shares a single ResizeObserver between instances', () => {
+        const a = makeEl();
+        const b = makeEl();
+
+        new ReadMore(a);
+        new ReadMore(b);
+        expect(resizeObservers).toHaveLength(1);
+        expect(observed.has(a) && observed.has(b)).toBe(true);
+    });
+
+    it('measures every resized element before mounting any button', () => {
+        const log: string[] = [];
+        const a = makeEl();
+        const b = makeEl();
+
+        new ReadMore(a);
+        new ReadMore(b);
+
+        const spy = (el: HTMLElement, name: string): void => {
+            Object.defineProperty(el, 'scrollHeight', {
+                configurable: true,
+                get: () => {
+                    log.push(`read:${ name }`);
+
+                    return 200;
+                }
+            });
+
+            const insert = el.insertAdjacentElement.bind(el);
+
+            el.insertAdjacentElement = (where, node) => {
+                log.push(`write:${ name }`);
+
+                return insert(where, node);
+            };
+        };
+
+        spy(a, 'a');
+        spy(b, 'b');
+        triggerResize();
+        expect(log).toEqual([
+            'read:a',
+            'read:b',
+            'write:a',
+            'write:b'
+        ]);
     });
 });
