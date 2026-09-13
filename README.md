@@ -19,8 +19,8 @@ Lightweight, framework-agnostic plugin to clamp text to N lines (or a fixed pixe
 npm install @frontfactory/readmore
 ```
 
-Requires Node.js `^22.22.2 || >=24.15` to build from source. The published package runs in any modern browser supporting 
-`ResizeObserver`.
+Requires Node.js `^22.22.2 || >=24.15` to build from source. The published package is shipped as untranspiled ES2022
+(private class members, logical assignment, `ResizeObserver`) and runs in Chrome/Edge 85+, Firefox 90+ and Safari 15+.
 
 ## Playground
 
@@ -71,6 +71,21 @@ if (el) new ReadMore(el, {
     lines: 4,
     onToggle: (expanded) => console.log('expanded:', expanded)
 });
+```
+
+### With a framework
+
+The instance holds a `ResizeObserver` and a button outside the element, so call `destroy()` when the component
+unmounts. For example with React:
+
+```tsx
+useEffect(() => {
+    const instance = new ReadMore(ref.current!, {
+        lines: 3
+    });
+
+    return () => instance.destroy();
+}, []);
 ```
 
 ## Options
@@ -145,3 +160,13 @@ hooks to drive enter/leave animations:
     /* collapse animation */ 
 }
 ```
+
+## Limitations
+
+- While collapsed, `.readmore-clamp` sets `display: -webkit-box` (lines mode) or `display: block` (height mode), which
+  overrides the element's own `display`. To clamp a flex or grid container, wrap its content in an inner element and
+  initialize the plugin on that element instead.
+- In lines mode, how `-webkit-line-clamp` handles several block children (e.g. multiple `<p>`) varies between browsers.
+  For rich content, prefer height mode.
+- Lines mode cannot be animated: neither `display` nor `line-clamp` can transition. For an animated expand/collapse, use
+  height mode with a `max-height` transition.
