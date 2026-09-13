@@ -59,6 +59,9 @@ ReadMore.init(document.querySelectorAll<HTMLElement>('.excerpt'), {
 });
 ```
 
+Calling `ReadMore.init()` again is safe: elements that are already initialized keep their instance (and its options) and
+are returned as is, so you can re-run it after injecting new content.
+
 Or instantiate against a single element:
 
 ```ts
@@ -95,7 +98,7 @@ instance.toggle();      // expand / collapse programmatically
 instance.expanded;      // boolean getter
 instance.destroy();     // remove button, classes, listeners and generated id; toggle() is a no-op afterwards
 
-ReadMore.init(target, options);   // target: selector | NodeList | HTMLElement[] — returns ReadMore[]
+ReadMore.init(target, options);   // target: selector | NodeList | HTMLElement[] — returns ReadMore[], reusing existing instances
 ReadMore.getInstance(element);    // returns the ReadMore bound to an element, or undefined
 ```
 

@@ -645,6 +645,27 @@ describe('ReadMore.init - static', () => {
 
         expect(result).toEqual([]);
     });
+
+    it('returns existing instances and initializes only the new elements', () => {
+        const a = makeEl();
+        const b = makeEl();
+
+        a.classList.add('rm');
+        const existing = new ReadMore(a, {
+            lines: 5
+        });
+
+        b.classList.add('rm');
+        const result = ReadMore.init('.rm', {
+            lines: 2
+        });
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toBe(existing);
+        expect(result[0].options.lines).toBe(5);
+        expect(result[1]).toBe(ReadMore.getInstance(b));
+        expect(result[1].options.lines).toBe(2);
+    });
 });
 
 describe('ReadMore - button mounting based on overflow', () => {

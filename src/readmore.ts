@@ -179,10 +179,13 @@ export class ReadMore {
     }
 
     /**
-     * Instantiates {@link ReadMore} on every matching element.
+     * Instantiates {@link ReadMore} on every matching element. Elements that are
+     * already initialized are left untouched and their existing instance is
+     * returned, so it is safe to call again after new content is added.
      *
      * @param target - A CSS selector, a `NodeList` or an array of elements.
-     * @param options - See {@link ReadMoreOptions}.
+     * @param options - See {@link ReadMoreOptions}. Not applied to elements
+     * that are already initialized.
      * @returns One instance per element, in document order.
      */
     static init(
@@ -194,7 +197,7 @@ export class ReadMore {
                 ? document.querySelectorAll<HTMLElement>(target)
                 : target;
 
-        return Array.from(nodes).map((n) => new ReadMore(n, options));
+        return Array.from(nodes).map((n) => instances.get(n) ?? new ReadMore(n, options));
     }
 
     /** Whether the text is currently expanded. */
