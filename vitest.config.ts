@@ -3,14 +3,11 @@
 // ============================================================================================= //
 
 import { defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
     test: {
         globals: false,
-        environment: 'jsdom',
-        include: [
-            'src/**/*.test.ts'
-        ],
         reporters: [
             'default',
             'junit'
@@ -26,6 +23,41 @@ export default defineConfig({
             exclude: [
                 'src/**/*.test.ts'
             ]
-        }
+        },
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: 'unit',
+                    environment: 'jsdom',
+                    include: [
+                        'src/**/*.test.ts'
+                    ],
+                    exclude: [
+                        'src/**/*.browser.test.ts'
+                    ]
+                }
+            },
+            // Real layout (line-clamp, transitions, ResizeObserver) that jsdom cannot compute.
+            {
+                extends: true,
+                test: {
+                    name: 'browser',
+                    include: [
+                        'src/**/*.browser.test.ts'
+                    ],
+                    browser: {
+                        enabled: true,
+                        headless: true,
+                        provider: playwright(),
+                        instances: [
+                            {
+                                browser: 'chromium'
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
     }
 });

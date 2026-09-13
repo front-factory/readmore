@@ -10,9 +10,10 @@
         "build": "vite build",
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run",
+        "test": "vitest run --project unit",
+        "test:browser": "vitest run --project browser --outputFile.junit=junit-browser.xml",
         "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage",
+        "test:coverage": "vitest run --project unit --coverage",
         "prepare": "husky",
         "prepack": "npm run build",
         "release": "semantic-release"

@@ -3,12 +3,13 @@
 *.log
 *.map
 *.orig
-junit.xml
+junit*.xml
 
 ## Folders
 /.DS_Store
 /.idea
 /.vite
+/.vitest
 /dist
 /logs
 /node_modules
