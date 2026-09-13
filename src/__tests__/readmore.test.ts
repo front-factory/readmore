@@ -54,11 +54,13 @@ function makeEl(overflowing = false): HTMLElement {
     return el;
 }
 
-describe('ReadMore - constructor', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-    });
+afterEach(() => {
+    document.body.innerHTML = '';
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+});
 
+describe('ReadMore - constructor', () => {
     it('throws TypeError when not given an HTMLElement', () => {
         expect(() => new ReadMore(null as unknown as HTMLElement)).toThrow(TypeError);
         expect(() => new ReadMore({} as HTMLElement)).toThrow(TypeError);
@@ -218,10 +220,6 @@ describe('ReadMore - constructor', () => {
 });
 
 describe('ReadMore - lines mode', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-    });
-
     it('sets --readmore-lines and adds the clamp class', () => {
         const el = makeEl();
 
@@ -244,10 +242,6 @@ describe('ReadMore - lines mode', () => {
 });
 
 describe('ReadMore - height mode', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-    });
-
     it('sets --readmore-height and adds both clamp classes', () => {
         const el = makeEl();
 
@@ -272,10 +266,6 @@ describe('ReadMore - height mode', () => {
 });
 
 describe('ReadMore - toggle()', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-    });
-
     it('expands and collapses, flipping classes', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);
@@ -393,11 +383,6 @@ describe('ReadMore - toggle()', () => {
 });
 
 describe('ReadMore - destroy()', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-        vi.restoreAllMocks();
-    });
-
     it('removes classes and CSS variables', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el, {
@@ -463,12 +448,6 @@ describe('ReadMore - destroy()', () => {
 });
 
 describe('ReadMore - transient state classes', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-        vi.useRealTimers();
-        vi.restoreAllMocks();
-    });
-
     function mockTransition(duration: string, delay: string): void {
         vi.spyOn(window, 'getComputedStyle').mockReturnValue({
             transitionDuration: duration,
@@ -495,7 +474,7 @@ describe('ReadMore - transient state classes', () => {
         expect(rm.options.closingClass).toBe('closing');
     });
 
-    it('adds is-opening on expand and removes it after the fallback timeout', async () => {
+    it('adds is-opening on expand and removes it after the fallback timeout', () => {
         vi.useFakeTimers();
         const el = makeEl(true);
         const rm = new ReadMore(el);
@@ -507,7 +486,7 @@ describe('ReadMore - transient state classes', () => {
         expect(el.classList.contains('is-opening')).toBe(false);
     });
 
-    it('adds is-closing on collapse and removes it after the fallback timeout', async () => {
+    it('adds is-closing on collapse and removes it after the fallback timeout', () => {
         vi.useFakeTimers();
         const el = makeEl(true);
         const rm = new ReadMore(el);
@@ -643,10 +622,6 @@ describe('ReadMore - transient state classes', () => {
 });
 
 describe('ReadMore.init - static', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-    });
-
     it('returns a ReadMore array from a CSS selector', () => {
         const a = makeEl();
         const b = makeEl();
@@ -757,10 +732,6 @@ describe('ReadMore.init - static', () => {
 });
 
 describe('ReadMore - button mounting based on overflow', () => {
-    afterEach(() => {
-        document.body.innerHTML = '';
-    });
-
     it('does not mount the button when content does not overflow', () => {
         const el = makeEl(false);
 
