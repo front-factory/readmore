@@ -380,6 +380,51 @@ describe('ReadMore - toggle()', () => {
 
         expect(() => rm.toggle()).not.toThrow();
     });
+
+    it('toggle(true) expands and toggle(false) collapses', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        rm.toggle(true);
+        expect(rm.expanded).toBe(true);
+        expect(el.classList.contains('is-expanded')).toBe(true);
+
+        rm.toggle(false);
+        expect(rm.expanded).toBe(false);
+        expect(el.classList.contains('readmore-clamp')).toBe(true);
+    });
+
+    it('does nothing when forced into the current state', () => {
+        const onToggle = vi.fn();
+        const listener = vi.fn();
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            onToggle
+        });
+
+        el.addEventListener('readmore:toggle', listener);
+        rm.toggle(false);
+        rm.toggle(true);
+        rm.toggle(true);
+
+        expect(rm.expanded).toBe(true);
+        expect(onToggle).toHaveBeenCalledOnce();
+        expect(listener).toHaveBeenCalledOnce();
+        expect(el.classList.contains('is-opening')).toBe(true);
+    });
+
+    it('inverts the state when given a non-boolean, e.g. as an event listener', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        const trigger = document.createElement('button');
+
+        // Plain JS usage: TypeScript rightly rejects an Event as `force`.
+        trigger.addEventListener('click', rm.toggle.bind(rm) as unknown as EventListener);
+        trigger.click();
+        expect(rm.expanded).toBe(true);
+        trigger.click();
+        expect(rm.expanded).toBe(false);
+    });
 });
 
 describe('ReadMore - destroy()', () => {

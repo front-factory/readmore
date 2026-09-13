@@ -251,13 +251,21 @@ export class ReadMore {
      * `aria-expanded` attribute and the state classes, then calls
      * {@link ReadMoreOptions.onToggle} and dispatches a bubbling
      * `readmore:toggle` event on the element. Does nothing once destroyed.
+     *
+     * @param force - `true` to expand, `false` to collapse; the state is
+     * inverted when omitted. Does nothing if the text is already in the
+     * requested state.
      */
-    toggle(): void {
-        if (this.#destroyed) {
+    toggle(force?: boolean): void {
+        // Only a real boolean forces the state, so `toggle` still works as an
+        // event listener (`addEventListener('click', rm.toggle.bind(rm))`).
+        const expanded = typeof force === 'boolean' ? force : !this.#expanded;
+
+        if (this.#destroyed || expanded === this.#expanded) {
             return;
         }
 
-        this.#expanded = !this.#expanded;
+        this.#expanded = expanded;
         this.el.classList.toggle(CLAMP_CLASS, !this.#expanded);
 
         if (this.options.height != null) {

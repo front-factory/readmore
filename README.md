@@ -102,6 +102,15 @@ document.addEventListener('readmore:toggle', (event) => {
 });
 ```
 
+Pass `true` or `false` to `toggle()` to force a state, e.g. for an "Expand all" button. Instances already in that
+state are left untouched and fire neither `onToggle` nor the event:
+
+```ts
+const instances = ReadMore.init('.excerpt');
+
+expandAllButton.addEventListener('click', () => instances.forEach((instance) => instance.toggle(true)));
+```
+
 If you change the content without changing the element's size (resizes are already tracked), call `refresh()` so the
 button is mounted or removed as needed:
 
@@ -149,6 +158,7 @@ const instance = new ReadMore(element, options);
 instance.el;            // the target element
 instance.options;       // resolved options (read-only)
 instance.toggle();      // expand / collapse programmatically
+instance.toggle(true);  // force expand (false: force collapse); no-op if already in that state
 instance.expanded;      // boolean getter
 instance.refresh();     // re-check the overflow after a content change
 instance.destroy();     // remove button, classes, listeners and generated id; toggle() is a no-op afterwards
