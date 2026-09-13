@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.0](https://github.com/front-factory/readmore/compare/v1.3.1...v1.4.0) (2026-09-13)
+
+### Features
+
+* accept a force argument in toggle ([586913c](https://github.com/front-factory/readmore/commit/586913ca8e5be2acc37b9202fd707b831cb80a9f))
+* accept elements, iterables and a root in ReadMore.init ([31cd461](https://github.com/front-factory/readmore/commit/31cd4610d7aa05806661d2da43235ca698be7ba8))
+* add a public refresh method ([2e3720b](https://github.com/front-factory/readmore/commit/2e3720ba9973fcbb454fb09a7d7d02c4b9e673e1))
+* add an IIFE build for CDN usage ([6d537a5](https://github.com/front-factory/readmore/commit/6d537a5f5e2664a16ca6844100210ed8674d26a6))
+* add an opt-in fade for height mode ([d0bc71c](https://github.com/front-factory/readmore/commit/d0bc71cc52413f4354686183e2dfc77b17bd5df2))
+* add moreLabel and lessLabel options ([b14f651](https://github.com/front-factory/readmore/commit/b14f651fb4fa8ef9461db15a733db979782efb0b))
+* dispatch a readmore:toggle event and pass the instance to onToggle ([5f8cbf9](https://github.com/front-factory/readmore/commit/5f8cbf98a54423a32be5af5c544605734e8a1da6))
+
+### Bug Fixes
+
+* fall back to defaults for undefined options ([fd1c7d0](https://github.com/front-factory/readmore/commit/fd1c7d07823abcccb3aad45ead43e36ddb768871))
+* keep the toggle button during collapse transitions ([44eb144](https://github.com/front-factory/readmore/commit/44eb14494df2df531635ca2e5f33d5e825dc644f))
+* make toggle and destroy no-ops once destroyed ([d279ffd](https://github.com/front-factory/readmore/commit/d279ffd62ec74b1f60842e5482916cbc06a05369))
+* reject non-integer lines and non-finite height ([bfe19b4](https://github.com/front-factory/readmore/commit/bfe19b426116e7588697750dc1d1fba273142e16))
+* remove transient classes after the transition time ([3360f3d](https://github.com/front-factory/readmore/commit/3360f3d54ddeded9c06562f39e962cb882fbfc29))
+* reuse existing instances in ReadMore.init ([21cce44](https://github.com/front-factory/readmore/commit/21cce44e36a13bf64b89f8238eef34b8a22262ca))
+* skip generated ids already used in the page ([75b43b5](https://github.com/front-factory/readmore/commit/75b43b523adff7e2a4c3388b340376dd19c10443))
+
+### Dependencies
+
+* **deps:** update dependencies and drop node 20 ([48b7526](https://github.com/front-factory/readmore/commit/48b75261c48c79d0acc1b057893819b78e72e0d0))
+
 ## [1.3.1](https://github.com/front-factory/readmore/compare/v1.3.0...v1.3.1) (2026-07-26)
 
 ### Bug Fixes
