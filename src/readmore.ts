@@ -141,9 +141,10 @@ export class ReadMore {
         }
 
         this.el = element;
+        // Options explicitly set to `undefined` must not override the defaults.
         this.options = {
             ...DEFAULTS,
-            ...options
+            ...Object.fromEntries(Object.entries(options).filter((entry) => entry[1] !== undefined))
         };
 
         if (this.options.height != null && this.options.height <= 0) {

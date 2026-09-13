@@ -84,6 +84,21 @@ describe('ReadMore - constructor', () => {
         })).toThrow(RangeError);
     });
 
+    it('falls back to defaults for options explicitly set to undefined', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            lines: undefined,
+            moreText: undefined,
+            height: undefined
+        });
+
+        expect(rm.options.lines).toBe(3);
+        expect(rm.options.moreText).toBe('Read more');
+        expect(rm.options.height).toBeUndefined();
+        expect(el.style.getPropertyValue('--readmore-lines')).toBe('3');
+        expect(el.nextElementSibling?.textContent).toBe('Read more');
+    });
+
     it('accepts valid lines and height values', () => {
         const a = makeEl();
         const b = makeEl();
