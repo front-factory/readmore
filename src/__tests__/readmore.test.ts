@@ -84,6 +84,33 @@ describe('ReadMore - constructor', () => {
         })).toThrow(RangeError);
     });
 
+    it('throws RangeError when lines is not an integer', () => {
+        const el = makeEl();
+
+        for (const lines of [
+            NaN,
+            2.5,
+            Infinity
+        ]) {
+            expect(() => new ReadMore(el, {
+                lines
+            })).toThrow(RangeError);
+        }
+    });
+
+    it('throws RangeError when height is not a finite number', () => {
+        const el = makeEl();
+
+        for (const height of [
+            NaN,
+            Infinity
+        ]) {
+            expect(() => new ReadMore(el, {
+                height
+            })).toThrow(RangeError);
+        }
+    });
+
     it('falls back to defaults for options explicitly set to undefined', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el, {

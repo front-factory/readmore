@@ -6,7 +6,7 @@ export interface ReadMoreOptions {
      * Number of lines to clamp to. Ignored when {@link ReadMoreOptions.height} is set.
      *
      * @defaultValue 3
-     * @throws RangeError - if lower than 1.
+     * @throws RangeError - if not an integer greater than or equal to 1.
      */
     lines?: number;
 
@@ -14,7 +14,7 @@ export interface ReadMoreOptions {
      * Max height in pixels. Takes precedence over {@link ReadMoreOptions.lines}
      * and clamps with `max-height` instead of `-webkit-line-clamp`.
      *
-     * @throws RangeError - if lower than or equal to 0.
+     * @throws RangeError - if not a finite number greater than 0.
      */
     height?: number;
 
@@ -128,8 +128,8 @@ export class ReadMore {
      * @throws TypeError - if `element` is not an `HTMLElement`.
      * @throws Error - if `element` is already initialized; call
      * {@link ReadMore.destroy} first.
-     * @throws RangeError - if `lines` is lower than 1, or `height` lower than
-     * or equal to 0.
+     * @throws RangeError - if `lines` is not an integer greater than or equal
+     * to 1, or `height` is not a finite number greater than 0.
      */
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
         if (!(element instanceof HTMLElement)) {
@@ -147,12 +147,14 @@ export class ReadMore {
             ...Object.fromEntries(Object.entries(options).filter((entry) => entry[1] !== undefined))
         };
 
-        if (this.options.height != null && this.options.height <= 0) {
-            throw new RangeError('ReadMore: height must be greater than 0.');
+        const { height, lines } = this.options;
+
+        if (height != null && !(Number.isFinite(height) && height > 0)) {
+            throw new RangeError('ReadMore: height must be a finite number greater than 0.');
         }
 
-        if (this.options.lines < 1) {
-            throw new RangeError('ReadMore: lines must be at least 1.');
+        if (!(Number.isInteger(lines) && lines >= 1)) {
+            throw new RangeError('ReadMore: lines must be an integer of at least 1.');
         }
 
         this.#resizeObserver = new ResizeObserver(() => this.#refresh());

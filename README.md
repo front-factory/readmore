@@ -107,7 +107,7 @@ The constructor throws instead of failing silently:
 |--------------|-------------------------------------------------------------------------------|
 | `TypeError`  | `element` is not an `HTMLElement`.                                            |
 | `Error`      | The element is already initialized — call `destroy()` before re-initializing. |
-| `RangeError` | `lines` is lower than `1`, or `height` is lower than or equal to `0`.         |
+| `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.   |
 
 ## Accessibility
 
