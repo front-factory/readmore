@@ -47,6 +47,12 @@ jobs:
         env:
           HUSKY: 0
 
+      # Lint results don't depend on the Node version, and the shared ESLint
+      # config requires Node >=24, so lint on that leg only.
+      - name: Lint
+        if: matrix.node == 24
+        run: npm run lint
+
       - name: Typecheck
         run: npm run typecheck
 

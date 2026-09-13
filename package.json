@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "lint": "eslint .",
         "lint:js": "eslint --fix .",
         "build": "vite build",
         "preview": "vite preview",
