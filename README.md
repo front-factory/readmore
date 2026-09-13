@@ -214,6 +214,16 @@ hooks to drive enter/leave animations:
 }
 ```
 
+### Fade in height mode
+
+Add the `readmore-fade` class to the element to fade out the bottom of the clamped text in height mode (lines mode
+already ends with an ellipsis). The fade is removed while expanded; its size defaults to `2em` and can be changed with
+the `--readmore-fade-size` custom property:
+
+```html
+<p class="excerpt readmore-fade" style="--readmore-fade-size: 3em">…</p>
+```
+
 ## Limitations
 
 - While collapsed, `.readmore-clamp` sets `display: -webkit-box` (lines mode) or `display: block` (height mode), which

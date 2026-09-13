@@ -12,3 +12,9 @@
     -webkit-line-clamp: none;
     line-clamp: none;
 }
+
+/* Opt-in: add `readmore-fade` to the element to fade out its last visible pixels in height mode. */
+.readmore-fade.readmore-clamp--height {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--readmore-fade-size, 2em)), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--readmore-fade-size, 2em)), transparent);
+}

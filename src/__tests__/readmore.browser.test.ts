@@ -85,6 +85,28 @@ describe('ReadMore in a real browser', () => {
         expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
     });
 
+    it('fades the bottom in height mode with readmore-fade, only while collapsed', () => {
+        const el = makeEl(LONG_TEXT, 'readmore-fade');
+        const rm = readMore(el, {
+            height: 60
+        });
+
+        expect(getComputedStyle(el).maskImage).toContain('linear-gradient');
+
+        rm.toggle();
+        expect(getComputedStyle(el).maskImage).toBe('none');
+    });
+
+    it('does not fade in lines mode', () => {
+        const el = makeEl(LONG_TEXT, 'readmore-fade');
+
+        readMore(el, {
+            lines: 2
+        });
+
+        expect(getComputedStyle(el).maskImage).toBe('none');
+    });
+
     it('expands to the full height and collapses back', () => {
         const el = makeEl();
         const rm = readMore(el, {
