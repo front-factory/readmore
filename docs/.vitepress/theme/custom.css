@@ -1,0 +1,85 @@
+/* Live demos. The library ships no button style, so the docs bring their own. */
+
+.rm-demo {
+    margin: 1.5rem 0;
+    padding: 1.25rem;
+    border: var(--ff-rule-width, 1px) solid var(--ff-color-rule);
+    border-radius: var(--ff-radius-md, 6px);
+    background: var(--ff-color-surface);
+}
+
+.rm-demo .rm-demo-text {
+    margin: 0;
+}
+
+.rm-demo .readmore-btn {
+    margin-top: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ff-color-accent);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.rm-demo .readmore-btn:hover {
+    color: var(--ff-color-accent-hover);
+}
+
+.rm-demo .readmore-btn:focus-visible {
+    outline: 2px solid var(--ff-color-accent);
+    outline-offset: 3px;
+}
+
+.rm-demo .rm-demo-animated {
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+.rm-demo .rm-demo-animated.is-expanded {
+    max-height: 16rem;
+}
+
+/* Narrow columns wrap the sample into more lines, so the target must sit higher. */
+@media (width < 640px) {
+    .rm-demo .rm-demo-animated.is-expanded {
+        max-height: 24rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rm-demo .rm-demo-animated {
+        transition: none;
+    }
+}
+
+.rm-demo-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.rm-demo-action {
+    padding: 0.35rem 0.75rem;
+    border: var(--ff-rule-width, 1px) solid var(--ff-color-rule-strong);
+    border-radius: var(--ff-radius-sm, 4px);
+    background: none;
+    color: var(--ff-color-ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+.rm-demo-action:hover {
+    border-color: var(--ff-color-accent);
+    color: var(--ff-color-accent);
+}
+
+.rm-demo-item + .rm-demo-item {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: var(--ff-rule-width, 1px) solid var(--ff-color-rule);
+}
