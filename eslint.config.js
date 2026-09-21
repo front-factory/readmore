@@ -10,6 +10,8 @@ export default defineConfig([
     {
         ignores: [
             'dist/**',
+            'docs/.vitepress/cache/**',
+            'docs/.vitepress/dist/**',
             'node_modules/**'
         ]
     },
