@@ -74,6 +74,26 @@ re-creates the siblings of that element can drop the button, or leave a second o
 
 Give the clamped element a parent that renders nothing else dynamic, and the problem does not arise.
 
+Better, use the `buttonContainer` option: the button is appended to an element your framework owns (a ref) instead of
+being inserted next to the text. Keep calling `destroy()` on unmount.
+
+```tsx
+useEffect(() => {
+    const instance = new ReadMore(textRef.current!, {
+        buttonContainer: buttonRef.current!
+    });
+
+    return () => instance.destroy();
+}, []);
+
+return (
+    <>
+        <p ref={textRef}>{children}</p>
+        <div ref={buttonRef} />
+    </>
+);
+```
+
 ## Server rendering
 
 Importing `@frontfactory/readmore` on the server is safe: the module touches no DOM when it loads. Creating an instance

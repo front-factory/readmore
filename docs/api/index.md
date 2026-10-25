@@ -25,6 +25,7 @@ Every option is optional. An option explicitly set to `undefined` falls back to 
 | `moreLabel`     | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`. |
 | `lessLabel`     | `string`                                          | —                | `aria-label` of the button when expanded. Should contain `lessText`.  |
 | `buttonClass`   | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                   |
+| `buttonContainer` | `HTMLElement`                                   | —                | Element the button is appended to, instead of being inserted after the text. |
 | `expandedClass` | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                   |
 | `openingClass`  | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.    |
 | `closingClass`  | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.   |
@@ -172,6 +173,6 @@ the first element it cannot initialize. It never throws the `Error`, since it re
 
 | Error        | When                                                                          |
 |--------------|-------------------------------------------------------------------------------|
-| `TypeError`  | `element` is not an `HTMLElement`.                                            |
+| `TypeError`  | `element` or `buttonContainer` is not an `HTMLElement`.                       |
 | `Error`      | The element is already initialized. Call `destroy()` before re-initializing.  |
 | `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.   |

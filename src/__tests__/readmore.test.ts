@@ -1133,3 +1133,101 @@ describe('ReadMore - focus on button removal', () => {
         expect(el.hasAttribute('tabindex')).toBe(false);
     });
 });
+
+describe('ReadMore - buttonContainer', () => {
+    function makeContainer(): HTMLElement {
+        const container = document.createElement('div');
+
+        document.body.appendChild(container);
+
+        return container;
+    }
+
+    it('appends the button inside the container, not next to the element', () => {
+        const el = makeEl(true);
+        const container = makeContainer();
+
+        new ReadMore(el, {
+            buttonContainer: container
+        });
+
+        expect(container.querySelector('button')).toBeInstanceOf(HTMLButtonElement);
+        expect(el.nextElementSibling).toBe(container);
+    });
+
+    it('keeps inserting the button as a sibling by default', () => {
+        const el = makeEl(true);
+
+        new ReadMore(el);
+        expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+    });
+
+    it('removes the button from the container on destroy()', () => {
+        const el = makeEl(true);
+        const container = makeContainer();
+        const rm = new ReadMore(el, {
+            buttonContainer: container
+        });
+
+        rm.destroy();
+        expect(container.children).toHaveLength(0);
+    });
+
+    it('toggles from the button in the container', () => {
+        const el = makeEl(true);
+        const container = makeContainer();
+        const rm = new ReadMore(el, {
+            buttonContainer: container
+        });
+
+        container.querySelector('button')!.click();
+        expect(rm.expanded).toBe(true);
+    });
+
+    it('throws TypeError when it is not an HTMLElement', () => {
+        for (const bad of ['.container', {}, 42]) {
+            expect(() => new ReadMore(makeEl(), {
+                buttonContainer: bad as unknown as HTMLElement
+            })).toThrow(TypeError);
+        }
+    });
+
+    it('does not leave the element bound when the option is rejected', () => {
+        const el = makeEl();
+
+        expect(() => new ReadMore(el, {
+            buttonContainer: {} as HTMLElement
+        })).toThrow(TypeError);
+
+        expect(ReadMore.getInstance(el)).toBeUndefined();
+    });
+
+    it('ignores an undefined container', () => {
+        const el = makeEl(true);
+
+        new ReadMore(el, {
+            buttonContainer: undefined
+        });
+
+        expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+    });
+
+    it('moves focus to the element when the focused button in the container is removed', () => {
+        const el = makeEl(true);
+        const container = makeContainer();
+
+        new ReadMore(el, {
+            buttonContainer: container
+        });
+
+        const btn = container.querySelector('button')!;
+
+        btn.focus();
+        expect(document.activeElement).toBe(btn);
+
+        setOverflow(el, false);
+        triggerResize();
+        expect(container.children).toHaveLength(0);
+        expect(document.activeElement).toBe(el);
+    });
+});

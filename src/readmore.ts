@@ -53,6 +53,15 @@ export interface ReadMoreOptions {
     buttonClass?: string;
 
     /**
+     * Element the toggle button is appended to, instead of being inserted right
+     * after the clamped element. Use an element owned by your framework (a ref)
+     * so reconciliation cannot drop the button.
+     *
+     * @throws TypeError - if not an `HTMLElement`.
+     */
+    buttonContainer?: HTMLElement;
+
+    /**
      * Class applied to the target element for the whole expanded state.
      *
      * @defaultValue 'is-expanded'
@@ -87,7 +96,7 @@ export interface ReadMoreOptions {
     onToggle?: (expanded: boolean, instance: ReadMore) => void;
 }
 
-type OptionalKeys = 'height' | 'moreLabel' | 'lessLabel' | 'onToggle';
+type OptionalKeys = 'height' | 'buttonContainer' | 'moreLabel' | 'lessLabel' | 'onToggle';
 
 /**
  * {@link ReadMoreOptions} merged with the defaults, as exposed on
@@ -186,6 +195,7 @@ export class ReadMore {
      * {@link ReadMore.destroy} first.
      * @throws RangeError - if `lines` is not an integer greater than or equal
      * to 1, or `height` is not a finite number greater than 0.
+     * @throws TypeError - if `buttonContainer` is set but is not an `HTMLElement`.
      */
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
         if (!(element instanceof HTMLElement)) {
@@ -203,7 +213,11 @@ export class ReadMore {
             ...Object.fromEntries(Object.entries(options).filter((entry) => entry[1] !== undefined))
         };
 
-        const { height, lines } = this.options;
+        const { height, lines, buttonContainer } = this.options;
+
+        if (buttonContainer != null && !(buttonContainer instanceof HTMLElement)) {
+            throw new TypeError('ReadMore: buttonContainer must be an HTMLElement.');
+        }
 
         if (height != null && !(Number.isFinite(height) && height > 0)) {
             throw new RangeError('ReadMore: height must be a finite number greater than 0.');
@@ -469,7 +483,12 @@ export class ReadMore {
         btn.addEventListener('click', this.#onClick);
         this.#button = btn;
         this.#updateButton();
-        this.el.insertAdjacentElement('afterend', btn);
+
+        if (this.options.buttonContainer) {
+            this.options.buttonContainer.appendChild(btn);
+        } else {
+            this.el.insertAdjacentElement('afterend', btn);
+        }
     }
 
     /** Syncs the button's text, `aria-expanded` and `aria-label` with the state. */

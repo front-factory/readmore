@@ -7,7 +7,7 @@
 Lightweight, framework-agnostic plugin to clamp text to N lines (or a fixed pixel height) with an ellipsis and a
 `Read more` / `Read less` toggle button.
 
-- Zero dependencies, ~1.7 KB gzipped
+- Zero dependencies, ~1.8 KB gzipped
 - TypeScript types included
 - CSS-driven clamping via `-webkit-line-clamp` or `max-height`
 - The toggle button is only created when the text actually overflows
@@ -134,6 +134,29 @@ useEffect(() => {
 }, []);
 ```
 
+#### Frameworks (React, Vue, Svelte…)
+
+By default the button is inserted as a sibling of the element, which a framework may remove or leave behind when it
+re-renders. Pass `buttonContainer`, an element the framework owns (a ref), to append the button there instead, and call
+`destroy()` on unmount:
+
+```tsx
+useEffect(() => {
+    const instance = new ReadMore(textRef.current!, {
+        buttonContainer: buttonRef.current!
+    });
+
+    return () => instance.destroy();
+}, []);
+
+return (
+    <>
+        <p ref={textRef}>{children}</p>
+        <div ref={buttonRef} />
+    </>
+);
+```
+
 ## Options
 
 | Option          | Type                                              | Default          | Description                                                                 |
@@ -145,6 +168,7 @@ useEffect(() => {
 | `moreLabel`     | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`.       |
 | `lessLabel`     | `string`                                          | —                | `aria-label` of the button when expanded. Should contain `lessText`.        |
 | `buttonClass`   | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                         |
+| `buttonContainer` | `HTMLElement`                                   | —                | Element the button is appended to, instead of being inserted after the text. |
 | `expandedClass` | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                         |
 | `openingClass`  | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.          |
 | `closingClass`  | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.         |
@@ -178,6 +202,8 @@ The constructor throws instead of failing silently:
 | `TypeError`  | `element` is not an `HTMLElement`.                                            |
 | `Error`      | The element is already initialized — call `destroy()` before re-initializing. |
 | `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.   |
+
+A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 
 ## Accessibility
 

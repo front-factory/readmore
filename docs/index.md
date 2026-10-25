@@ -23,7 +23,7 @@ hero:
       link: https://github.com/front-factory/readmore
 features:
   - title: Zero dependencies
-    details: About 1.7 KB gzipped, with TypeScript types included.
+    details: About 1.8 KB gzipped, with TypeScript types included.
   - title: CSS-driven clamping
     details: Uses <code>-webkit-line-clamp</code> or <code>max-height</code>, so the browser does the layout work.
   - title: Only when needed
