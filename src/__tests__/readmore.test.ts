@@ -1323,3 +1323,110 @@ describe('ReadMore - web fonts', () => {
         expect(el.nextElementSibling).toBeNull();
     });
 });
+
+describe('ReadMore - web fonts, same tick', () => {
+    afterEach(() => {
+        delete (document as { fonts?: unknown }).fonts;
+    });
+
+    it('shares one measurement between instances created in the same tick', async () => {
+        let resolve!: () => void;
+        const ready = new Promise<void>((r) => {
+            resolve = r;
+        });
+
+        Object.defineProperty(document, 'fonts', {
+            configurable: true,
+            value: {
+                ready
+            }
+        });
+
+        const first = makeEl(false);
+        const second = makeEl(false);
+
+        new ReadMore(first);
+        new ReadMore(second);
+
+        setOverflow(first, true);
+        setOverflow(second, true);
+        resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(first.nextElementSibling?.tagName).toBe('BUTTON');
+        expect(second.nextElementSibling?.tagName).toBe('BUTTON');
+    });
+});
+
+describe('ReadMore - toggle() without a button', () => {
+    it('toggles the state when the text does not overflow', () => {
+        const el = makeEl(false);
+        const rm = new ReadMore(el);
+
+        expect(() => rm.toggle(true)).not.toThrow();
+        expect(el.nextElementSibling).toBeNull();
+    });
+});
+
+describe('ReadMore - running CSS transitions', () => {
+    class FakeTransition {}
+
+    function stubRunning(el: HTMLElement, finished: Promise<unknown>): void {
+        vi.stubGlobal('CSSTransition', FakeTransition);
+        el.getAnimations = (() => [
+            Object.assign(new FakeTransition(), {
+                finished
+            })
+        ]) as unknown as typeof el.getAnimations;
+    }
+
+    afterEach(() => {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    });
+
+    it('waits for running transitions before cleaning up', async () => {
+        vi.useFakeTimers();
+
+        let finish!: () => void;
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        stubRunning(el, new Promise<void>((r) => {
+            finish = r;
+        }));
+        rm.toggle(true);
+        vi.runAllTimers();
+
+        expect(el.classList.contains(rm.options.openingClass)).toBe(true);
+
+        finish();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(el.classList.contains(rm.options.openingClass)).toBe(false);
+    });
+
+    it('ignores a transition that ends after destroy()', async () => {
+        vi.useFakeTimers();
+
+        let finish!: () => void;
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        stubRunning(el, new Promise<void>((r) => {
+            finish = r;
+        }));
+        rm.toggle(true);
+        vi.runAllTimers();
+        rm.destroy();
+
+        finish();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(el.nextElementSibling).toBeNull();
+    });
+});
