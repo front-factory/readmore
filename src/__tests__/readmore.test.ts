@@ -1049,3 +1049,68 @@ describe('ReadMore.init - batched measuring', () => {
         expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
     });
 });
+
+describe('ReadMore - focus on button removal', () => {
+    function focusButton(el: HTMLElement): void {
+        const btn = el.nextElementSibling as HTMLButtonElement;
+
+        btn.focus();
+        expect(document.activeElement).toBe(btn);
+    }
+
+    it('moves focus to the element when a resize unmounts the focused button', () => {
+        const el = makeEl(true);
+
+        new ReadMore(el);
+        focusButton(el);
+
+        setOverflow(el, false);
+        triggerResize();
+        expect(el.nextElementSibling).toBeNull();
+        expect(document.activeElement).toBe(el);
+    });
+
+    it('moves focus to the element when destroy() removes the focused button', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        focusButton(el);
+        rm.destroy();
+        expect(document.activeElement).toBe(el);
+    });
+
+    it('removes the temporary tabindex once the element loses focus', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        focusButton(el);
+        rm.destroy();
+        expect(el.getAttribute('tabindex')).toBe('-1');
+        el.blur();
+        expect(el.hasAttribute('tabindex')).toBe(false);
+    });
+
+    it('keeps an existing tabindex untouched', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+
+        el.setAttribute('tabindex', '0');
+        focusButton(el);
+        rm.destroy();
+        expect(document.activeElement).toBe(el);
+        el.blur();
+        expect(el.getAttribute('tabindex')).toBe('0');
+    });
+
+    it('does not move focus when the button is not focused', () => {
+        const el = makeEl(true);
+        const other = document.createElement('input');
+        const rm = new ReadMore(el);
+
+        document.body.appendChild(other);
+        other.focus();
+        rm.destroy();
+        expect(document.activeElement).toBe(other);
+        expect(el.hasAttribute('tabindex')).toBe(false);
+    });
+});

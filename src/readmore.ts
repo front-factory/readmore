@@ -492,6 +492,21 @@ export class ReadMore {
         }
 
         this.#button.removeEventListener('click', this.#onClick);
+
+        // Removing the focused button would drop focus to <body>: keep it on the element.
+        if (document.activeElement === this.#button) {
+            const { el } = this;
+
+            if (!el.hasAttribute('tabindex')) {
+                el.tabIndex = -1;
+                el.addEventListener('blur', () => el.removeAttribute('tabindex'), {
+                    once: true
+                });
+            }
+
+            el.focus();
+        }
+
         this.#button.remove();
         this.#button = null;
     }
