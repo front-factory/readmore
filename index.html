@@ -6,25 +6,102 @@
     <title>ReadMore demo</title>
     <link rel="stylesheet" href="src/readmore.css"/>
     <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #f5f6f8;
+            --surface: #fff;
+            --surface-alt: #f8f9fa;
+            --border: #d9dce1;
+            --text: #1d2026;
+            --muted: #596069;
+            --accent: #1a73e8;
+            --accent-hover: #0c47a1;
+            --accent-text: #fff;
+            --opening-bg: #e8f0fe;
+            --closing-bg: #fdecec;
+            --radius: 10px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #14161a;
+                --surface: #1e2127;
+                --surface-alt: #262a31;
+                --border: #3a3f48;
+                --text: #e6e8eb;
+                --muted: #a0a7b2;
+                --accent: #8ab4f8;
+                --accent-hover: #c2d7fb;
+                --accent-text: #10151c;
+                --opening-bg: #1f3556;
+                --closing-bg: #4a2427;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, sans-serif;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             max-width: 640px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            line-height: 1.5;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        h1 {
+            margin: 0 0 1.5rem;
+            font-size: 1.6rem;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        button {
+            padding: 0.3rem 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface-alt);
+            color: inherit;
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.85rem;
+        }
+
+        button:hover {
+            border-color: var(--accent);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            color: inherit;
+            font: inherit;
         }
 
         .card {
-            border: 1px solid #ddd;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.25rem;
+            background: var(--surface);
+        }
+
+        .card p {
+            margin: 0;
         }
 
         h2 {
-            margin-top: 0;
+            margin: 0 0 0.5rem;
             font-size: 1rem;
-            color: #555;
+            color: var(--muted);
         }
 
         .readmore-btn {
@@ -33,18 +110,18 @@
             padding: 0;
             background: none;
             border: 0;
-            color: #1a73e8;
+            color: var(--accent);
             cursor: pointer;
             font: inherit;
             text-decoration: underline;
         }
 
         .readmore-btn:hover, .readmore-btn:focus-visible {
-            color: #0c47a1;
+            color: var(--accent-hover);
         }
 
         .controls {
-            background: #f8f9fa;
+            background: var(--surface-alt);
         }
 
         .controls h2 {
@@ -57,6 +134,12 @@
             gap: 0.75rem;
         }
 
+        @media (max-width: 480px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .control-group {
             display: flex;
             flex-direction: column;
@@ -66,22 +149,19 @@
         .control-group label {
             font-size: 0.8rem;
             font-weight: 600;
-            color: #555;
+            color: var(--muted);
         }
 
-        .control-group input[type="text"],
-        .control-group input[type="number"] {
-            padding: 0.35rem 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font: inherit;
+        .control-group input[type="text"] {
+            padding: 0.4rem 0.55rem;
             font-size: 0.9rem;
         }
 
         .card-header {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem 0.75rem;
             margin-bottom: 0.5rem;
         }
 
@@ -91,7 +171,7 @@
 
         .card-header label {
             font-size: 0.8rem;
-            color: #555;
+            color: var(--muted);
             display: flex;
             align-items: center;
             gap: 0.35rem;
@@ -103,11 +183,8 @@
         }
 
         .card-header input[type="number"] {
-            width: 3.5rem;
+            width: 4rem;
             padding: 0.2rem 0.35rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font: inherit;
             font-size: 0.85rem;
         }
 
@@ -122,11 +199,11 @@
         }
 
         .excerpt-c.is-opening {
-            background: #e8f0fe;
+            background: var(--opening-bg);
         }
 
         .excerpt-c.is-closing {
-            background: #fdecec;
+            background: var(--closing-bg);
         }
 
         /* Respect users who ask for less motion. */
@@ -140,25 +217,34 @@
         .link-btn {
             margin-top: 0.25rem;
             padding: 0.25rem 0.6rem;
-            background: #1a73e8;
+            background: var(--accent);
             border: 0;
-            border-radius: 4px;
-            color: #fff;
+            border-radius: 6px;
+            color: var(--accent-text);
             cursor: pointer;
             font: inherit;
             font-size: 0.85rem;
         }
 
         .excerpt-d.open {
-            border-left: 3px solid #1a73e8;
+            border-left: 3px solid var(--accent);
             padding-left: 0.75rem;
+        }
+
+        /* Example F: the button lands here instead of right after the excerpt. */
+        .card-footer {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
+            min-height: 2.25rem;
         }
 
         .log {
             margin: 0;
-            font-family: ui-monospace, Menlo, monospace;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
             font-size: 0.8rem;
-            color: #555;
+            color: var(--muted);
+            overflow-wrap: anywhere;
         }
     </style>
 </head>
@@ -185,8 +271,8 @@
         <button type="button" id="expand-all">Expand all</button>
         <button type="button" id="collapse-all">Collapse all</button>
     </div>
-    <p class="log" id="log">No toggle yet.</p>
-    <p class="log" id="callback-log">Toggle example D to see its onToggle callback.</p>
+    <p class="log" id="log" aria-live="polite">No toggle yet.</p>
+    <p class="log" id="callback-log" aria-live="polite">Toggle example D to see its onToggle callback.</p>
 </div>
 
 <div class="card">
@@ -223,6 +309,7 @@
         <h2>Example C — height mode</h2>
         <label>height (px) <input id="height-c" type="number" min="20" max="500" value="60"/></label>
         <label><input id="fade-c" type="checkbox"/> fade</label>
+        <label>fade size (em) <input id="fade-size-c" type="number" min="0.5" max="10" step="0.5" value="2"/></label>
     </div>
     <p class="excerpt-c" data-name="C">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
@@ -256,12 +343,28 @@
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h2>Example F — buttonContainer</h2>
+    </div>
+    <p class="excerpt-f" data-name="F">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </p>
+    <div class="card-footer" id="footer-f"></div>
+</div>
+
+<div class="card">
     <h2>Short text (no button)</h2>
     <p class="excerpt-short" data-name="Short">Text is too short to be truncated.</p>
 </div>
 
 <script type="module">
     import { ReadMore } from '/src/readmore.ts';
+
+    const $ = (id) => document.getElementById(id);
+    const intValue = (id, fallback) => parseInt($(id).value) || fallback;
 
     const LOREM = document.querySelector('.excerpt-b').textContent.trim();
     const SHORT_TEXT = 'This text now fits, so the button is removed.';
@@ -270,9 +373,10 @@
     let toggleCount = 0;
     let feedCount = 0;
 
-    const log = document.getElementById('log');
-    const callbackLog = document.getElementById('callback-log');
-    const feed = document.getElementById('feed');
+    const log = $('log');
+    const callbackLog = $('callback-log');
+    const feed = $('feed');
+    const excerptC = document.querySelector('.excerpt-c');
 
     // A single delegated listener logs the toggles of every instance.
     document.addEventListener('readmore:toggle', (event) => {
@@ -286,8 +390,8 @@
 
     function sharedOptions() {
         return {
-            moreText: document.getElementById('moreText').value || 'Read more',
-            lessText: document.getElementById('lessText').value || 'Read less',
+            moreText: $('moreText').value || 'Read more',
+            lessText: $('lessText').value || 'Read less',
         };
     }
 
@@ -306,21 +410,21 @@
 
         instances = [
             ...ReadMore.init('.excerpt-a', {
-                lines: parseInt(document.getElementById('lines-a').value) || 2,
+                lines: intValue('lines-a', 2),
                 ...shared,
                 moreLabel: `${shared.moreText} about example A`,
                 lessLabel: `${shared.lessText} about example A`,
             }),
             ...ReadMore.init('.excerpt-b', {
-                lines: parseInt(document.getElementById('lines-b').value) || 4,
+                lines: intValue('lines-b', 4),
                 ...shared,
             }),
             ...ReadMore.init('.excerpt-c', {
-                height: parseInt(document.getElementById('height-c').value) || 60,
+                height: intValue('height-c', 60),
                 ...shared,
             }),
             // A single element works as well as a selector.
-            ...ReadMore.init(document.getElementById('bio'), {
+            ...ReadMore.init($('bio'), {
                 lines: 2,
                 ...shared,
                 buttonClass: 'link-btn',
@@ -330,6 +434,12 @@
                 onToggle: (expanded, instance) => {
                     callbackLog.textContent = `onToggle → #${instance.el.id} expanded: ${expanded}`;
                 },
+            }),
+            // The button is appended to this container instead of following the excerpt.
+            ...ReadMore.init('.excerpt-f', {
+                lines: 2,
+                ...shared,
+                buttonContainer: $('footer-f'),
             }),
             ...ReadMore.init('.excerpt-short', shared),
             ...initFeed(),
@@ -343,21 +453,21 @@
     });
 
     // Instances are recreated on every reinit(), so look the current one up on click.
-    document.getElementById('toggle-d').addEventListener('click', () => {
-        ReadMore.getInstance(document.getElementById('bio'))?.toggle();
+    $('toggle-d').addEventListener('click', () => {
+        ReadMore.getInstance($('bio'))?.toggle();
     });
 
     // toggle(true / false) forces a state: instances already in it are left untouched.
-    document.getElementById('expand-all').addEventListener('click', () => {
+    $('expand-all').addEventListener('click', () => {
         instances.forEach(rm => rm.toggle(true));
     });
 
-    document.getElementById('collapse-all').addEventListener('click', () => {
+    $('collapse-all').addEventListener('click', () => {
         instances.forEach(rm => rm.toggle(false));
     });
 
     // Resizes are tracked automatically; refresh() covers content changes.
-    document.getElementById('swap-b').addEventListener('click', () => {
+    $('swap-b').addEventListener('click', () => {
         const el = document.querySelector('.excerpt-b');
 
         el.textContent = el.textContent === SHORT_TEXT ? LOREM : SHORT_TEXT;
@@ -365,12 +475,24 @@
     });
 
     // The fade is pure CSS: toggling the class is enough.
-    document.getElementById('fade-c').addEventListener('change', (event) => {
-        document.querySelector('.excerpt-c').classList.toggle('readmore-fade', event.target.checked);
+    $('fade-c').addEventListener('change', (event) => {
+        excerptC.classList.toggle('readmore-fade', event.target.checked);
+    });
+
+    // The fade size is a CSS custom property (in em), set inline on the element.
+    // It survives reinit(): destroy() only removes the plugin's own properties.
+    $('fade-size-c').addEventListener('input', (event) => {
+        const size = parseFloat(event.target.value);
+
+        if (size > 0) {
+            excerptC.style.setProperty('--readmore-fade-size', `${size}em`);
+        } else {
+            excerptC.style.removeProperty('--readmore-fade-size');
+        }
     });
 
     // Re-running init() only creates instances for the new excerpts.
-    document.getElementById('add-e').addEventListener('click', () => {
+    $('add-e').addEventListener('click', () => {
         const p = document.createElement('p');
 
         p.className = 'excerpt-e';
