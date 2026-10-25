@@ -1395,6 +1395,7 @@ describe('ReadMore - running CSS transitions', () => {
         stubRunning(el, new Promise<void>((r) => {
             finish = r;
         }));
+
         rm.toggle(true);
         vi.runAllTimers();
 
@@ -1418,6 +1419,7 @@ describe('ReadMore - running CSS transitions', () => {
         stubRunning(el, new Promise<void>((r) => {
             finish = r;
         }));
+
         rm.toggle(true);
         vi.runAllTimers();
         rm.destroy();
