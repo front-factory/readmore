@@ -71,10 +71,15 @@ jobs:
       - name: Tests
         run: npm run test
 
-      # Real-browser tests don't depend on the Node version either.
-      - name: Install Playwright Chromium
+      # Enforces the coverage thresholds from vitest.config.ts (unit project).
+      - name: Coverage
         if: matrix.node == 24
-        run: npx playwright install --with-deps chromium
+        run: npm run test:coverage
+
+      # Real-browser tests don't depend on the Node version either.
+      - name: Install Playwright browsers
+        if: matrix.node == 24
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Browser Tests
         if: matrix.node == 24

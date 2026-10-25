@@ -22,7 +22,14 @@ export default defineConfig({
             ],
             exclude: [
                 'src/**/*.test.ts'
-            ]
+            ],
+            // Slightly below the measured values (99.3 / 97.8 / 100 / 99.3) to catch regressions without flakiness.
+            thresholds: {
+                lines: 97,
+                statements: 97,
+                branches: 95,
+                functions: 98
+            }
         },
         projects: [
             {
@@ -53,6 +60,12 @@ export default defineConfig({
                         instances: [
                             {
                                 browser: 'chromium'
+                            },
+                            {
+                                browser: 'firefox'
+                            },
+                            {
+                                browser: 'webkit'
                             }
                         ]
                     }
