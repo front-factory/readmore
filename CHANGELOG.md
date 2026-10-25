@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.0](https://github.com/front-factory/readmore/compare/v1.4.0...v1.5.0) (2026-10-25)
+
+### Features
+
+* add buttonContainer option for framework-managed buttons ([1421ba7](https://github.com/front-factory/readmore/commit/1421ba7d8c0545be4f8392f86589ddcdc6df4b52))
+
+### Bug Fixes
+
+* **a11y:** keep focus on the element when the button is removed ([1bb7dff](https://github.com/front-factory/readmore/commit/1bb7dff7a44aa798b72d53feb4015a9eea54a1b4))
+* accept numeric strings for lines and height ([2eb8132](https://github.com/front-factory/readmore/commit/2eb8132b3d083da7d90ecd44af749fdd6c53aa1e))
+* dispatch readmore:toggle even when onToggle throws ([59d56fd](https://github.com/front-factory/readmore/commit/59d56fd8479bfefa251587c97bafd74e8f59f7bc))
+* **lint:** disable core no-undef and no-unused-vars for TypeScript ([f1425a4](https://github.com/front-factory/readmore/commit/f1425a45f39f5d99fbb101e410cd3218c8a7d553))
+* re-measure the clamp once web fonts are ready ([d2f794d](https://github.com/front-factory/readmore/commit/d2f794d34f7a7be39120ebf02a26f15cecef250c))
+* wait for running transitions before refreshing after toggle ([5ed9c58](https://github.com/front-factory/readmore/commit/5ed9c58ea74375e349a1f74d6aca5861d5a7ee35))
+
 ## [1.4.0](https://github.com/front-factory/readmore/compare/v1.3.1...v1.4.0) (2026-09-13)
 
 ### Features
