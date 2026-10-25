@@ -19,7 +19,7 @@ Lightweight, framework-agnostic plugin to clamp text to N lines (or a fixed pixe
 npm install @frontfactory/readmore
 ```
 
-Requires Node.js `^22.22.2 || >=24.15` to build from source. The published package is shipped as untranspiled ES2022
+Requires Node.js `^22.22.2 || >=24.22` to build from source. The published package is shipped as untranspiled ES2022
 (private class members, logical assignment, `ResizeObserver`) and runs in Chrome/Edge 85+, Firefox 90+ and Safari 15+.
 
 ### From a CDN

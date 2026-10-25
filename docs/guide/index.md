@@ -28,7 +28,7 @@ bun add @frontfactory/readmore
 
 ::: info Browser support
 The published package is shipped as untranspiled ES2022 and runs in Chrome/Edge 85+, Firefox 90+ and Safari 15+.
-Building it from source requires Node.js `^22.22.2 || >=24.15`.
+Building it from source requires Node.js `^22.22.2 || >=24.22`.
 :::
 
 ## Your first clamp
