@@ -57,7 +57,9 @@ Also set the `lang` attribute on the page or on the element, so the labels are r
 
 ## What it leaves to you
 
-- **Focus.** The plugin never moves it. After a toggle, focus stays on the button.
+- **Focus.** A toggle leaves focus on the button. If the focused button is removed (the text stops overflowing, or
+  `destroy()` is called), focus moves to the clamped element instead of dropping to `<body>`. The element gets a
+  temporary `tabindex="-1"`, removed on blur, unless it already has a `tabindex`.
 - **Announcements.** There is no live region: `aria-expanded` is what tells a screen reader the state changed.
 - **Motion.** If you [animate](/guide/animation) the expansion, turn the transition off under
   `prefers-reduced-motion: reduce`.

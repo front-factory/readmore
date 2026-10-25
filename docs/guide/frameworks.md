@@ -9,7 +9,8 @@ Readmore has no framework binding, and needs none. The rule is the same everywhe
 1. **Create the instance once the element is in the DOM.**
 2. **Destroy it when the component goes away.**
 
-The second half matters. The instance owns a button that sits **outside** the element, next to it, and it is watched by
+The second half matters. The instance owns a button that sits **outside** the element (by default right next to it, or in
+[`buttonContainer`](#keep-the-button-s-parent-stable)), and it is watched by
 a `ResizeObserver`. `destroy()` removes the button and stops the observation.
 
 ## React
@@ -69,7 +70,7 @@ size changing, call [`refresh()`](/guide/controlling#when-the-content-changes) o
 
 ## Keep the button's parent stable
 
-The button is inserted right after the clamped element, into whatever contains it. A framework that re-orders or
+By default, the button is inserted right after the clamped element, into whatever contains it. A framework that re-orders or
 re-creates the siblings of that element can drop the button, or leave a second one behind.
 
 Give the clamped element a parent that renders nothing else dynamic, and the problem does not arise.

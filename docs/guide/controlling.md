@@ -53,6 +53,8 @@ document.addEventListener('readmore:toggle', (event) => {
 
 `event.detail` is typed, on elements and on `document`, as soon as the package is imported.
 
+If `onToggle` throws, the `readmore:toggle` event is still dispatched and the error is then re-thrown to the caller.
+
 ## Finding an instance
 
 `ReadMore.getInstance()` returns the instance bound to an element, or `undefined`:

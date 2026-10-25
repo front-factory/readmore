@@ -7,7 +7,7 @@
 Lightweight, framework-agnostic plugin to clamp text to N lines (or a fixed pixel height) with an ellipsis and a
 `Read more` / `Read less` toggle button.
 
-- Zero dependencies, ~1.8 KB gzipped
+- Zero dependencies, ~1.9 KB gzipped
 - TypeScript types included
 - CSS-driven clamping via `-webkit-line-clamp` or `max-height`
 - The toggle button is only created when the text actually overflows
@@ -119,26 +119,12 @@ instance.el.textContent = newText;
 instance.refresh();
 ```
 
-### With a framework
+### With a framework (React, Vue, Svelte…)
 
 The instance holds a button outside the element and is watched by a `ResizeObserver`, so call `destroy()` when the
-component unmounts. For example with React:
-
-```tsx
-useEffect(() => {
-    const instance = new ReadMore(ref.current!, {
-        lines: 3
-    });
-
-    return () => instance.destroy();
-}, []);
-```
-
-#### Frameworks (React, Vue, Svelte…)
-
-By default the button is inserted as a sibling of the element, which a framework may remove or leave behind when it
-re-renders. Pass `buttonContainer`, an element the framework owns (a ref), to append the button there instead, and call
-`destroy()` on unmount:
+component unmounts. By default the button is inserted as a sibling of the element, which a framework may remove or
+leave behind when it re-renders. The recommended fix is `buttonContainer`: pass an element the framework owns (a ref)
+and the button is appended there instead. For example with React:
 
 ```tsx
 useEffect(() => {
@@ -159,20 +145,20 @@ return (
 
 ## Options
 
-| Option          | Type                                              | Default          | Description                                                                 |
-|-----------------|---------------------------------------------------|------------------|-----------------------------------------------------------------------------|
-| `lines`         | `number`                                          | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set.          |
-| `height`        | `number`                                          | —                | Max height in pixels (min `1`). Takes precedence over `lines`.              |
-| `moreText`      | `string`                                          | `'Read more'`    | Label of the button when the text is collapsed.                             |
-| `lessText`      | `string`                                          | `'Read less'`    | Label of the button when the text is expanded.                              |
-| `moreLabel`     | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`.       |
-| `lessLabel`     | `string`                                          | —                | `aria-label` of the button when expanded. Should contain `lessText`.        |
-| `buttonClass`   | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                         |
-| `buttonContainer` | `HTMLElement`                                   | —                | Element the button is appended to, instead of being inserted after the text. |
-| `expandedClass` | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                         |
-| `openingClass`  | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.          |
-| `closingClass`  | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.         |
-| `onToggle`      | `(expanded: boolean, instance: ReadMore) => void` | —                | Callback fired after each toggle, before the `readmore:toggle` event.       |
+| Option            | Type                                              | Default          | Description                                                                                           |
+|-------------------|---------------------------------------------------|------------------|-------------------------------------------------------------------------------------------------------|
+| `lines`           | `number`                                          | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set.                                    |
+| `height`          | `number`                                          | —                | Max height in pixels (greater than `0`). Takes precedence over `lines`.                                        |
+| `moreText`        | `string`                                          | `'Read more'`    | Label of the button when the text is collapsed.                                                       |
+| `lessText`        | `string`                                          | `'Read less'`    | Label of the button when the text is expanded.                                                        |
+| `moreLabel`       | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`.                                 |
+| `lessLabel`       | `string`                                          | —                | `aria-label` of the button when expanded. Should contain `lessText`.                                  |
+| `buttonClass`     | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                                                   |
+| `buttonContainer` | `HTMLElement`                                     | —                | Element the button is appended to, instead of being inserted after the text.                          |
+| `expandedClass`   | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                                                   |
+| `openingClass`    | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.                                    |
+| `closingClass`    | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.                                   |
+| `onToggle`        | `(expanded: boolean, instance: ReadMore) => void` | —                | Callback fired after each toggle, before the `readmore:toggle` event (still dispatched if it throws). |
 
 ## API
 
@@ -205,7 +191,8 @@ The constructor throws instead of failing silently:
 
 A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 
-`lines` and `height` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or non-numeric strings throw a `RangeError`.
+`lines` and `height` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or
+non-numeric strings throw a `RangeError`.
 
 ## Accessibility
 
@@ -228,8 +215,8 @@ new ReadMore(el, {
 The plugin sets a CSS custom property on the target element and toggles `.readmore-clamp`. In **lines mode** (default),
 it sets `--readmore-lines` and the bundled stylesheet applies `-webkit-line-clamp`, producing an ellipsis at the end of
 the last visible line. In **height mode** (`height` option), it sets `--readmore-height` and applies `max-height` via
-the `.readmore-clamp--height` modifier class instead. The toggle button is mounted right after the element only when the
-content actually overflows; a single `ResizeObserver`, shared by every instance, watches the elements and unmounts the
+the `.readmore-clamp--height` modifier class instead. The toggle button is mounted (right after the element, or inside
+`buttonContainer` when set) only when the content actually overflows; a single `ResizeObserver`, shared by every instance, watches the elements and unmounts the
 button again if the text ends up fitting (or mounts it later if it starts overflowing). All resized elements are
 measured before any button is added or removed, to avoid a layout per element.
 

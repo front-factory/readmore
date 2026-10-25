@@ -23,7 +23,8 @@ The script writes two custom properties on the element, and removes them when yo
 
 ## The button
 
-The button is a `<button type="button">` inserted right after the clamped element, with the class from the
+The button is a `<button type="button">` inserted right after the clamped element (or appended to `buttonContainer` when set, see
+[Frameworks](/guide/frameworks#keep-the-button-s-parent-stable)), with the class from the
 `buttonClass` option (`readmore-btn` by default). It has no style of its own, so start from something like this:
 
 ```css

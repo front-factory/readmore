@@ -23,7 +23,7 @@ one pixel or less is ignored, so a text that fits, give or take a rounding error
 
 ## 3. Mount the button
 
-If the text overflows, a `<button>` is inserted right after the element, with `aria-controls` pointing to it, and an
+If the text overflows, a `<button>` is inserted right after the element (or appended to `buttonContainer` when set), with `aria-controls` pointing to it, and an
 `id` is generated for the element when it has none.
 
 If the text does not overflow, nothing is added. If it stops overflowing later, the button is removed again.
@@ -33,6 +33,10 @@ If the text does not overflow, nothing is added. If it stops overflowing later, 
 A single `ResizeObserver`, created with the first instance and shared by all of them, watches every clamped element.
 When a batch of elements is resized, they are all **measured first**, and only then are buttons added or removed. Mixing
 reads and writes would force a new layout for each element; this way the whole batch costs one.
+
+`init()` follows the same rule: it measures all its elements in one pass before touching the DOM. A re-measure also runs
+once `document.fonts.ready` resolves, since web fonts change the text's size; instances created in the same tick share
+that wait.
 
 The check does not run while the text is expanded, since there is nothing to clamp, nor during a toggle transition,
 since the size is not final yet.
@@ -60,6 +64,8 @@ properties, and drops the generated `id`. The element is then ready to be initia
   or grid container, clamp an inner element instead.
 - **Several block children in lines mode.** How `-webkit-line-clamp` handles a `<div>` holding multiple `<p>` varies
   between browsers. For rich content, prefer [height mode](/guide/modes#height).
+- **Content changes are not detected.** Only size changes are observed; after a change that keeps the element's size,
+  call [`refresh()`](/guide/controlling#when-the-content-changes).
 - **Lines mode cannot be animated.** Neither `display` nor `line-clamp` can transition. See
   [Animation](/guide/animation).
 - **Same-size content changes are not detected.** Call [`refresh()`](/guide/controlling#when-the-content-changes).

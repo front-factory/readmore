@@ -19,7 +19,7 @@ Every option is optional. An option explicitly set to `undefined` falls back to 
 | Option          | Type                                              | Default          | Description                                                           |
 |-----------------|---------------------------------------------------|------------------|-----------------------------------------------------------------------|
 | `lines`         | `number`                                          | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set.    |
-| `height`        | `number`                                          | —                | Max height in pixels (min `1`). Takes precedence over `lines`.        |
+| `height`        | `number`                                          | —                | Max height in pixels (greater than `0`). Takes precedence over `lines`. |
 | `moreText`      | `string`                                          | `'Read more'`    | Label of the button when the text is collapsed.                       |
 | `lessText`      | `string`                                          | `'Read less'`    | Label of the button when the text is expanded.                        |
 | `moreLabel`     | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`. |
@@ -38,7 +38,7 @@ options are used.
 
 <Api name="new ReadMore()" kind="constructor" signature="new ReadMore(element: HTMLElement, options?: ReadMoreOptions)">
 
-Clamps `element` and, if the text overflows, mounts the toggle button right after it.
+Clamps `element` and, if the text overflows, mounts the toggle button right after it (or appends it to `buttonContainer`).
 
 ```ts
 const instance = new ReadMore(document.querySelector<HTMLElement>('#bio')!, {
@@ -141,7 +141,7 @@ Calling it again does nothing, and `toggle()` is a no-op afterwards.
 <Api name="readmore:toggle" kind="event" signature="CustomEvent<ReadMoreToggleDetail>">
 
 Dispatched on the element after each toggle, right after `onToggle`. It **bubbles**, so a listener on `document` catches
-every clamped element.
+every clamped element. If `onToggle` throws, the event is still dispatched and the error is then re-thrown to the caller.
 
 | `detail` field | Type       | Description                                    |
 |----------------|------------|------------------------------------------------|

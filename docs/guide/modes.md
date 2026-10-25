@@ -25,7 +25,8 @@ ReadMore.init('.excerpt', {
 
 <ReadmoreDemo :options="{ lines: 2 }" />
 
-`lines` must be an integer of at least `1`; anything else throws a `RangeError`.
+`lines` must be an integer of at least `1`; anything else throws a `RangeError`. Numeric strings such as `'3'` are accepted; blank or
+non-numeric strings throw a `RangeError`.
 
 ## Height
 
@@ -51,7 +52,8 @@ class to fade the bottom edge out:
 The fade is removed while the text is expanded. Its size defaults to `2em` and follows the `--readmore-fade-size` custom
 property; see [Styling](/guide/styling#fade).
 
-`height` must be a finite number greater than `0`; anything else throws a `RangeError`.
+`height` must be a finite number greater than `0`; anything else throws a `RangeError`. Numeric strings such as `'80'` are accepted; blank or
+non-numeric strings throw a `RangeError`.
 
 ## Choosing
 
