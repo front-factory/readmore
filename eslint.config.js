@@ -16,5 +16,15 @@ export default defineConfig([
         ]
     },
     ...ts.configs.recommended,
-    ...frontFactoryConfig
+    ...frontFactoryConfig,
+    {
+        // The shared config re-enables core rules that typescript-eslint turns off for TS files
+        files: [
+            '**/*.ts'
+        ],
+        rules: {
+            'no-undef': 'off',
+            'no-unused-vars': 'off'
+        }
+    }
 ]);
