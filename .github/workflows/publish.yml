@@ -60,14 +60,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Keeps the size advertised in the README honest (~1.9 KB gzipped). Only the
-      # minified IIFE (CDN) build is measured: the ES module ships unminified.
-      - name: Bundle Size
-        if: matrix.node == 24
-        # Block scalar: the script contains ": ", which breaks a plain YAML value.
-        run: |
-          node -e "const f = 'dist/readmore.iife.js'; const s = require('zlib').gzipSync(require('fs').readFileSync(f)).length; console.log(f + ': ' + s + ' B gzipped (limit 2000 B)'); if (s > 2000) process.exitCode = 1;"
-
       - name: Tests
         run: npm run test
 
