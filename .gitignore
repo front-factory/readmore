@@ -16,3 +16,6 @@ junit*.xml
 /dist
 /logs
 /node_modules
+
+.claude/settings.local.json
+CLAUDE.local.md

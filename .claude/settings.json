@@ -9,7 +9,12 @@
             "Glob",
             "Grep",
             "LS",
-            "Bash(*)"
+            "Bash(*)",
+            "Bash(git status:*)",
+            "Bash(git diff:*)",
+            "Bash(git log:*)",
+            "Bash(git show:*)",
+            "Bash(npm run:*)"
         ],
         "deny": [
             "Bash(git push *)",
@@ -20,7 +25,66 @@
             "Bash(pnpm publish *)",
             "Read(**/.env*)",
             "Edit(**/.env*)",
-            "Write(**/.env*)"
+            "Write(**/.env*)",
+            "Bash(git reset --hard:*)",
+            "Bash(git push --force:*)",
+            "Bash(git push -f:*)",
+            "Bash(git clean -f:*)",
+            "Bash(git branch -D:*)",
+            "Bash(rm -rf /:*)",
+            "Bash(rm -rf ~:*)",
+            "Read(./.env*)",
+            "Read(./**/*.pem)",
+            "Read(./**/*.key)",
+            "Read(./node_modules/**)",
+            "Read(./package-lock.json)",
+            "Read(./pnpm-lock.yaml)",
+            "Read(./yarn.lock)",
+            "Read(./bun.lock)",
+            "Read(./bun.lockb)",
+            "Read(./dist/**)",
+            "Read(./build/**)",
+            "Read(./.next/**)",
+            "Read(./coverage/**)",
+            "Read(./.git/**)",
+            "Read(./**/*.map)",
+            "Read(./**/*.min.js)"
+        ],
+        "defaultMode": "acceptEdits",
+        "ask": [
+            "Bash(git push:*)",
+            "Bash(git merge:*)",
+            "Bash(git rebase:*)"
+        ]
+    },
+    "model": "opusplan",
+    "effortLevel": "medium",
+    "language": "French",
+    "statusLine": {
+        "type": "command",
+        "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run-node.sh\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/statusline.mjs\""
+    },
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run-node.sh\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.mjs\""
+                    }
+                ]
+            }
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run-node.sh\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/git-guard.mjs\""
+                    }
+                ]
+            }
         ]
     }
 }
