@@ -252,6 +252,18 @@ hooks to drive enter/leave animations:
 }
 ```
 
+### Reduced motion
+
+If you animate the expansion, turn the transition off for users who ask for less motion:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    .excerpt {
+        transition: none;
+    }
+}
+```
+
 ### Fade in height mode
 
 Add the `readmore-fade` class to the element to fade out the bottom of the clamped text in height mode (lines mode

@@ -129,6 +129,13 @@
             background: #fdecec;
         }
 
+        /* Respect users who ask for less motion. */
+        @media (prefers-reduced-motion: reduce) {
+            .excerpt-c {
+                transition: none;
+            }
+        }
+
         /* Example D renames every class the plugin applies. */
         .link-btn {
             margin-top: 0.25rem;
