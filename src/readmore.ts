@@ -169,6 +169,9 @@ export class ReadMore {
     /** Instances created by the running {@link ReadMore.init}, synced together once all exist. */
     static #batch: ReadMore[] | null = null;
 
+    /** Instances waiting for `document.fonts.ready`, measured together. */
+    static #fontQueue: ReadMore[] | null = null;
+
     /** The clamped element. */
     readonly el: HTMLElement;
 
@@ -420,6 +423,32 @@ export class ReadMore {
         } else {
             this.refresh();
         }
+
+        this.#refreshOnFonts();
+    }
+
+    // A font swap can change the overflow without resizing the element, which the
+    // ResizeObserver would miss. Instances created in the same tick share one
+    // measurement; destroyed ones are skipped by #sync.
+    #refreshOnFonts(): void {
+        if (typeof document === 'undefined' || !document.fonts) {
+            return;
+        }
+
+        if (ReadMore.#fontQueue) {
+            ReadMore.#fontQueue.push(this);
+
+            return;
+        }
+
+        const queue: ReadMore[] = ReadMore.#fontQueue = [
+            this
+        ];
+
+        void document.fonts.ready.then(() => {
+            ReadMore.#fontQueue = null;
+            ReadMore.#syncAll(queue.filter((instance) => !instance.#destroyed));
+        });
     }
 
     #isOverflowing(): boolean {

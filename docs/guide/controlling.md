@@ -70,8 +70,10 @@ instance?.toggle(true);
 Size changes are tracked for you: a single `ResizeObserver` watches every clamped element and mounts or removes the
 button as the text starts or stops overflowing.
 
-A change that keeps the element's size is invisible to it. Swap the text for another one of the same height, or change
-the fonts after they load, and nothing tells the plugin. Call `refresh()` to check again:
+The clamp is also measured again once `document.fonts.ready` resolves, so web fonts that finish loading are handled.
+
+A change that keeps the element's size is invisible to it. Swap the text for another one of the same height and nothing
+tells the plugin. Call `refresh()` to check again:
 
 ```ts
 instance.el.textContent = newText;

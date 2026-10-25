@@ -9,7 +9,7 @@ Status: open
 
 | ID | Severity | File | Problem | Status | Notes (commit / reason) |
 |----|----------|------|---------|--------|-------------------------|
-| F1 | high | src/readmore.ts ~372-374 | Only ResizeObserver triggers a re-measure; a web-font swap or a content edit without box change leaves the clamp state wrong. Fix: `document.fonts?.ready.then(() => this.refresh())` in #init, optionally on `loadingdone`; document in README. | open | |
+| F1 | high | src/readmore.ts ~372-374 | Only ResizeObserver triggers a re-measure; a web-font swap or a content edit without box change leaves the clamp state wrong. Fix: `document.fonts?.ready.then(() => this.refresh())` in #init, optionally on `loadingdone`; document in README. | fixed | |
 | F2 | high | vite.config.ts ~20 | `minify: true` applies to ESM too and there is no `sourcemap`. Fix: minify only the IIFE build, ship unminified ESM + sourcemap, check `.gitignore` (`*.map`) and shipped files. | fixed | Already pending from the 2026-09-13 audit (item 15). |
 | F3 | medium | src/readmore.ts ~374 | The constructor calls refresh(), reading scrollHeight synchronously; `ReadMore.init()` over N elements forces layout N times (write/read/insert interleaved). Fix: measure all first then sync, or rely on the observer's initial callback. | fixed | |
 | F4 | medium | src/readmore.ts ~329, 390 | `button.remove()` on resize unmount or destroy() drops focus to body (keyboard a11y). Fix: if the button is the activeElement, move focus to `this.el` (temporary tabindex=-1) before removal; add a test. | fixed | |

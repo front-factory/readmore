@@ -1262,3 +1262,59 @@ describe('ReadMore - buttonContainer', () => {
         expect(document.activeElement).toBe(el);
     });
 });
+
+describe('ReadMore - web fonts', () => {
+    function stubFonts(): () => void {
+        let resolve!: () => void;
+        const ready = new Promise<void>((r) => {
+            resolve = r;
+        });
+
+        Object.defineProperty(document, 'fonts', {
+            configurable: true,
+            value: {
+                ready
+            }
+        });
+
+        return resolve;
+    }
+
+    afterEach(() => {
+        delete (document as { fonts?: unknown }).fonts;
+    });
+
+    it('re-measures once the fonts are ready', async () => {
+        const resolve = stubFonts();
+        const el = makeEl(false);
+        const rm = new ReadMore(el);
+
+        expect(el.nextElementSibling).toBeNull();
+
+        setOverflow(el, true);
+        resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(rm.el.nextElementSibling?.tagName).toBe('BUTTON');
+    });
+
+    it('works when document.fonts is undefined', () => {
+        expect(document.fonts).toBeUndefined();
+        expect(() => new ReadMore(makeEl(true))).not.toThrow();
+    });
+
+    it('does nothing after destroy()', async () => {
+        const resolve = stubFonts();
+        const el = makeEl(false);
+        const rm = new ReadMore(el);
+
+        rm.destroy();
+        setOverflow(el, true);
+        resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(el.nextElementSibling).toBeNull();
+    });
+});
