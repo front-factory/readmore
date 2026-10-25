@@ -292,14 +292,19 @@ export class ReadMore {
 
         this.el.classList.remove(otherClass);
         this.#applyTransientClass(stateClass);
-        this.options.onToggle?.(this.#expanded, this);
-        this.el.dispatchEvent(new CustomEvent<ReadMoreToggleDetail>('readmore:toggle', {
-            bubbles: true,
-            detail: {
-                expanded: this.#expanded,
-                instance: this
-            }
-        }));
+
+        try {
+            this.options.onToggle?.(this.#expanded, this);
+        } finally {
+            // The event is dispatched even if `onToggle` throws (the error still propagates).
+            this.el.dispatchEvent(new CustomEvent<ReadMoreToggleDetail>('readmore:toggle', {
+                bubbles: true,
+                detail: {
+                    expanded: this.#expanded,
+                    instance: this
+                }
+            }));
+        }
     }
 
     /**

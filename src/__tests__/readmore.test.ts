@@ -374,6 +374,25 @@ describe('ReadMore - toggle()', () => {
         expect((events[0] as CustomEvent).detail.instance).toBe(rm);
     });
 
+    it('still dispatches the event and propagates the error when onToggle throws', () => {
+        const error = new Error('boom');
+        const listener = vi.fn();
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            onToggle: () => {
+                throw error;
+            }
+        });
+
+        el.addEventListener('readmore:toggle', listener);
+
+        expect(() => rm.toggle()).toThrow(error);
+        expect(listener).toHaveBeenCalledOnce();
+        expect(rm.expanded).toBe(true);
+        expect(el.classList.contains('is-expanded')).toBe(true);
+        expect(el.classList.contains('readmore-clamp')).toBe(false);
+    });
+
     it('does not throw when onToggle is not provided', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el);

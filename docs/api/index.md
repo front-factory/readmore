@@ -100,7 +100,8 @@ Whether the text is currently expanded.
 <Api name="toggle()" kind="method" signature="toggle(force?: boolean): void">
 
 Expands or collapses the text: it updates the button's label and `aria-expanded`, swaps the state classes, calls
-`onToggle`, then dispatches the [`readmore:toggle`](#readmore-toggle) event.
+`onToggle`, then dispatches the [`readmore:toggle`](#readmore-toggle) event. If `onToggle` throws, the event is still
+dispatched and the error is then re-thrown.
 
 | Parameter | Type      | Description                                                                          |
 |-----------|-----------|--------------------------------------------------------------------------------------|
