@@ -157,6 +157,9 @@ export class ReadMore {
     /** Shared by every instance, created with the first one. */
     static #resizeObserver: ResizeObserver | undefined;
 
+    /** Instances created by the running {@link ReadMore.init}, synced together once all exist. */
+    static #batch: ReadMore[] | null = null;
+
     /** The clamped element. */
     readonly el: HTMLElement;
 
@@ -238,7 +241,16 @@ export class ReadMore {
                     target
                 ] : target;
 
-        return Array.from(nodes).map((n) => instances.get(n) ?? new ReadMore(n, options));
+        const batch: ReadMore[] = [];
+
+        ReadMore.#batch = batch;
+
+        try {
+            return Array.from(nodes).map((n) => instances.get(n) ?? new ReadMore(n, options));
+        } finally {
+            ReadMore.#batch = null;
+            ReadMore.#syncAll(batch);
+        }
     }
 
     /** Whether the text is currently expanded. */
@@ -347,11 +359,13 @@ export class ReadMore {
     // Measures every resized element before touching the DOM, so mounting a
     // button does not force a new layout for each following element.
     static #onResize(entries: ResizeObserverEntry[]): void {
+        ReadMore.#syncAll(entries.map((entry) => instances.get(entry.target as HTMLElement)));
+    }
+
+    static #syncAll(list: (ReadMore | undefined)[]): void {
         const measured = new Map<ReadMore, boolean>();
 
-        for (const entry of entries) {
-            const instance = instances.get(entry.target as HTMLElement);
-
+        for (const instance of list) {
             if (instance) {
                 measured.set(instance, instance.#isOverflowing());
             }
@@ -371,7 +385,13 @@ export class ReadMore {
 
         ReadMore.#resizeObserver ??= new ResizeObserver(ReadMore.#onResize);
         ReadMore.#resizeObserver.observe(this.el);
-        this.refresh();
+
+        // Inside init(), the batch measures all elements at once afterwards.
+        if (ReadMore.#batch) {
+            ReadMore.#batch.push(this);
+        } else {
+            this.refresh();
+        }
     }
 
     #isOverflowing(): boolean {

@@ -1001,3 +1001,51 @@ describe('ReadMore - button mounting based on overflow', () => {
         ]);
     });
 });
+
+describe('ReadMore.init - batched measuring', () => {
+    it('measures every new element before mounting any button', () => {
+        const log: string[] = [];
+        const els = [
+            makeEl(),
+            makeEl()
+        ];
+
+        els.forEach((el, i) => {
+            Object.defineProperty(el, 'scrollHeight', {
+                configurable: true,
+                get: () => {
+                    log.push(`read:${ i }`);
+
+                    return 200;
+                }
+            });
+
+            const insert = el.insertAdjacentElement.bind(el);
+
+            el.insertAdjacentElement = (where, node) => {
+                log.push(`write:${ i }`);
+
+                return insert(where, node);
+            };
+        });
+
+        ReadMore.init(els);
+        expect(log).toEqual([
+            'read:0',
+            'read:1',
+            'write:0',
+            'write:1'
+        ]);
+    });
+
+    it('still syncs the elements created before one throws', () => {
+        const el = makeEl(true);
+
+        expect(() => ReadMore.init([
+            el,
+            null as unknown as HTMLElement
+        ])).toThrow(TypeError);
+
+        expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+    });
+});
