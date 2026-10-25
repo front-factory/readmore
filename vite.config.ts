@@ -6,22 +6,30 @@ import { transform as lightningcssTransform } from 'lightningcss';
 export default defineConfig({
     build: {
         lib: {
-            entry: 'src/readmore.ts',
-            fileName: (format) => (format === 'iife' ? 'readmore.iife.js' : 'readmore.js'),
-            formats: [
-                'es',
-                'iife'
-            ],
-            // The IIFE (CDN build) exposes `FrontFactory.ReadMore`.
-            name: 'FrontFactory'
+            entry: 'src/readmore.ts'
         },
         rolldownOptions: {
-            output: {
-                // Adds to an existing `FrontFactory` global instead of replacing it.
-                extend: true
-            }
+            output: [
+                {
+                    // Readable ES module for bundlers and `node_modules`.
+                    format: 'es',
+                    entryFileNames: 'readmore.js',
+                    minify: false
+                },
+                {
+                    format: 'iife',
+                    entryFileNames: 'readmore.iife.js',
+                    // The IIFE (CDN build) exposes `FrontFactory.ReadMore`.
+                    name: 'FrontFactory',
+                    // Adds to an existing `FrontFactory` global instead of replacing it.
+                    extend: true,
+                    // Minified CDN build.
+                    minify: true
+                }
+            ]
         },
-        minify: true,
+        sourcemap: true,
+        minify: false,
         emptyOutDir: true
     },
     plugins: [
