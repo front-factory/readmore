@@ -481,11 +481,29 @@ export class ReadMore {
 
         // A timer rather than `transitionend`, which never fires when no declared
         // property actually changes (e.g. `transition: all` in lines mode).
-        this.#transientTimer = setTimeout(() => {
-            this.#transientTimer = null;
-            this.el.classList.remove(stateClass);
-            this.refresh();
+        const timer = setTimeout(() => {
+            // Some engines (WebKit) start the transition later than the timer assumes:
+            // wait for it to end, or the size is measured mid-way and the button remounted.
+            const running = this.el.getAnimations?.().filter(a => a instanceof CSSTransition) ?? [];
+            const done = () => {
+                // Superseded by another toggle, or destroyed meanwhile.
+                if (this.#transientTimer !== timer) {
+                    return;
+                }
+
+                this.#transientTimer = null;
+                this.el.classList.remove(stateClass);
+                this.refresh();
+            };
+
+            if (running.length) {
+                Promise.allSettled(running.map(a => a.finished)).then(done);
+            } else {
+                done();
+            }
         }, this.#transitionTime());
+
+        this.#transientTimer = timer;
     }
 
     /** Longest `duration + delay` among the transitions declared on the element, in ms. */
