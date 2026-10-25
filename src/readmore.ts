@@ -217,7 +217,10 @@ export class ReadMore {
         };
 
         // Numeric strings (data-* attributes, framework props) are accepted; blank or non-numeric ones still fail below.
-        for (const key of ['height', 'lines'] as const) {
+        for (const key of [
+            'height',
+            'lines'
+        ] as const) {
             const value: unknown = this.options[key];
 
             if (typeof value === 'string' && value.trim() !== '') {

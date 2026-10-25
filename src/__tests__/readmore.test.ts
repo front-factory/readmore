@@ -143,6 +143,7 @@ describe('ReadMore - constructor', () => {
             expect(() => new ReadMore(makeEl(), {
                 lines: value as unknown as number
             })).toThrow(RangeError);
+
             expect(() => new ReadMore(makeEl(), {
                 height: value as unknown as number
             })).toThrow(RangeError);
@@ -1216,7 +1217,11 @@ describe('ReadMore - buttonContainer', () => {
     });
 
     it('throws TypeError when it is not an HTMLElement', () => {
-        for (const bad of ['.container', {}, 42]) {
+        for (const bad of [
+            '.container',
+            {},
+            42
+        ]) {
             expect(() => new ReadMore(makeEl(), {
                 buttonContainer: bad as unknown as HTMLElement
             })).toThrow(TypeError);
