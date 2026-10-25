@@ -213,6 +213,15 @@ export class ReadMore {
             ...Object.fromEntries(Object.entries(options).filter((entry) => entry[1] !== undefined))
         };
 
+        // Numeric strings (data-* attributes, framework props) are accepted; blank or non-numeric ones still fail below.
+        for (const key of ['height', 'lines'] as const) {
+            const value: unknown = this.options[key];
+
+            if (typeof value === 'string' && value.trim() !== '') {
+                (this.options as Record<string, unknown>)[key] = Number(value);
+            }
+        }
+
         const { height, lines, buttonContainer } = this.options;
 
         if (buttonContainer != null && !(buttonContainer instanceof HTMLElement)) {

@@ -205,6 +205,8 @@ The constructor throws instead of failing silently:
 
 A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 
+`lines` and `height` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or non-numeric strings throw a `RangeError`.
+
 ## Accessibility
 
 When the button is mounted, it gets `aria-expanded` (kept in sync on every toggle) and `aria-controls`

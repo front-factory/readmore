@@ -176,3 +176,5 @@ the first element it cannot initialize. It never throws the `Error`, since it re
 | `TypeError`  | `element` or `buttonContainer` is not an `HTMLElement`.                       |
 | `Error`      | The element is already initialized. Call `destroy()` before re-initializing.  |
 | `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.   |
+
+`lines` and `height` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or non-numeric strings throw a `RangeError`.

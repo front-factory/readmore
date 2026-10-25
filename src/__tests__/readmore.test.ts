@@ -118,6 +118,37 @@ describe('ReadMore - constructor', () => {
         }
     });
 
+    it('accepts numeric strings for lines and height', () => {
+        const rm = new ReadMore(makeEl(), {
+            lines: '2' as unknown as number
+        });
+
+        expect(rm.options.lines).toBe(2);
+        rm.destroy();
+
+        const rmHeight = new ReadMore(makeEl(), {
+            height: '120' as unknown as number
+        });
+
+        expect(rmHeight.options.height).toBe(120);
+        rmHeight.destroy();
+    });
+
+    it('still rejects blank and non-numeric strings', () => {
+        for (const value of [
+            '',
+            ' ',
+            'abc'
+        ]) {
+            expect(() => new ReadMore(makeEl(), {
+                lines: value as unknown as number
+            })).toThrow(RangeError);
+            expect(() => new ReadMore(makeEl(), {
+                height: value as unknown as number
+            })).toThrow(RangeError);
+        }
+    });
+
     it('falls back to defaults for options explicitly set to undefined', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el, {
