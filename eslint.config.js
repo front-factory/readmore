@@ -9,6 +9,7 @@ import ts from 'typescript-eslint';
 export default defineConfig([
     {
         ignores: [
+            '.claude/**',
             'dist/**',
             'docs/.vitepress/cache/**',
             'docs/.vitepress/dist/**',
