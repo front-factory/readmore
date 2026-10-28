@@ -1,5 +1,5 @@
 import {
-    afterEach, describe, expect, it, vi
+    afterEach, beforeEach, describe, expect, it, vi
 } from 'vitest';
 import { ReadMore } from '../readmore';
 
@@ -55,6 +55,8 @@ function makeEl(overflowing = false): HTMLElement {
 }
 
 afterEach(() => {
+    // Instances share static state (live registry): don't leak them across tests.
+    document.body.querySelectorAll<HTMLElement>('*').forEach((el) => ReadMore.getInstance(el)?.destroy());
     document.body.innerHTML = '';
     vi.useRealTimers();
     vi.restoreAllMocks();
@@ -1407,6 +1409,94 @@ describe('ReadMore - web fonts, same tick', () => {
 
         expect(first.nextElementSibling?.tagName).toBe('BUTTON');
         expect(second.nextElementSibling?.tagName).toBe('BUTTON');
+    });
+});
+
+describe('ReadMore - web fonts, loadingdone', () => {
+    const created: ReadMore[] = [];
+    let fonts: EventTarget;
+
+    function track(rm: ReadMore): ReadMore {
+        created.push(rm);
+
+        return rm;
+    }
+
+    beforeEach(() => {
+        fonts = Object.assign(new EventTarget(), {
+            ready: new Promise<void>(() => {})
+        });
+
+        Object.defineProperty(document, 'fonts', {
+            configurable: true,
+            value: fonts
+        });
+    });
+
+    afterEach(() => {
+        created.splice(0).forEach((rm) => rm.destroy());
+        delete (document as { fonts?: unknown }).fonts;
+    });
+
+    it('resyncs a live instance when a late font finishes loading', () => {
+        const el = makeEl(false);
+
+        track(new ReadMore(el));
+        expect(el.nextElementSibling).toBeNull();
+
+        setOverflow(el, true);
+        fonts.dispatchEvent(new Event('loadingdone'));
+        expect(el.nextElementSibling?.tagName).toBe('BUTTON');
+
+        setOverflow(el, false);
+        fonts.dispatchEvent(new Event('loadingdone'));
+        expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('does not resync a destroyed instance', () => {
+        const el = makeEl(false);
+        const rm = new ReadMore(el);
+
+        rm.destroy();
+        setOverflow(el, true);
+        fonts.dispatchEvent(new Event('loadingdone'));
+
+        expect(el.nextElementSibling).toBeNull();
+    });
+
+    it('does not resync an expanded instance', () => {
+        const el = makeEl(true);
+        const rm = track(new ReadMore(el));
+
+        rm.toggle(true);
+        setOverflow(el, false);
+        fonts.dispatchEvent(new Event('loadingdone'));
+
+        expect(el.nextElementSibling?.tagName).toBe('BUTTON');
+    });
+
+    it('uses a single listener shared by all instances, removed with the last one', () => {
+        const add = vi.spyOn(fonts, 'addEventListener');
+        const remove = vi.spyOn(fonts, 'removeEventListener');
+        const first = new ReadMore(makeEl(false));
+        const second = new ReadMore(makeEl(false));
+
+        expect(add).toHaveBeenCalledTimes(1);
+
+        first.destroy();
+        expect(remove).not.toHaveBeenCalled();
+
+        second.destroy();
+        expect(remove).toHaveBeenCalledTimes(1);
+        expect(remove.mock.calls[0][1]).toBe(add.mock.calls[0][1]);
+    });
+
+    it('does not throw when document.fonts is missing', () => {
+        delete (document as { fonts?: unknown }).fonts;
+
+        const rm = new ReadMore(makeEl(true));
+
+        expect(() => rm.destroy()).not.toThrow();
     });
 });
 

@@ -111,7 +111,7 @@ const instances = ReadMore.init('.excerpt');
 expandAllButton.addEventListener('click', () => instances.forEach((instance) => instance.toggle(true)));
 ```
 
-The clamp is re-measured when the element resizes and once web fonts finish loading. Content changes that keep the
+The clamp is re-measured when the element resizes and each time web fonts finish loading. Content changes that keep the
 element's size are not detected: call `refresh()` so the button is mounted or removed as needed:
 
 ```ts

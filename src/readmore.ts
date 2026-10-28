@@ -172,6 +172,12 @@ export class ReadMore {
     /** Instances waiting for `document.fonts.ready`, measured together. */
     static #fontQueue: ReadMore[] | null = null;
 
+    /** Live instances resynced by the shared `document.fonts` `loadingdone` listener. */
+    static #live = new Set<ReadMore>();
+
+    /** The `document.fonts` the shared listener is attached to. */
+    static #fonts: FontFaceSet | undefined;
+
     /** The clamped element. */
     readonly el: HTMLElement;
 
@@ -382,6 +388,11 @@ export class ReadMore {
         instances.delete(this.el);
         ReadMore.#resizeObserver?.unobserve(this.el);
 
+        if (ReadMore.#live.delete(this) && ReadMore.#live.size === 0) {
+            ReadMore.#fonts?.removeEventListener?.('loadingdone', ReadMore.#onFontsLoaded);
+            ReadMore.#fonts = undefined;
+        }
+
         if (this.#transientTimer !== null) {
             clearTimeout(this.#transientTimer);
             this.#transientTimer = null;
@@ -410,6 +421,10 @@ export class ReadMore {
     static #onResize(entries: ResizeObserverEntry[]): void {
         ReadMore.#syncAll(entries.map((entry) => instances.get(entry.target as HTMLElement)));
     }
+
+    static #onFontsLoaded = (): void => {
+        ReadMore.#syncAll(Array.from(ReadMore.#live));
+    };
 
     static #syncAll(list: (ReadMore | undefined)[]): void {
         const measured = new Map<ReadMore, boolean>();
@@ -452,6 +467,15 @@ export class ReadMore {
         if (typeof document === 'undefined' || !document.fonts) {
             return;
         }
+
+        // Fonts loaded later (after `ready`) are caught by one shared listener.
+        if (ReadMore.#fonts !== document.fonts) {
+            ReadMore.#fonts?.removeEventListener?.('loadingdone', ReadMore.#onFontsLoaded);
+            ReadMore.#fonts = document.fonts;
+            ReadMore.#fonts.addEventListener?.('loadingdone', ReadMore.#onFontsLoaded);
+        }
+
+        ReadMore.#live.add(this);
 
         if (ReadMore.#fontQueue) {
             ReadMore.#fontQueue.push(this);
