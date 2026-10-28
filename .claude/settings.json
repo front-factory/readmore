@@ -50,7 +50,7 @@
             "Read(./**/*.map)",
             "Read(./**/*.min.js)"
         ],
-        "defaultMode": "acceptEdits",
+        "defaultMode": "plan",
         "ask": [
             "Bash(git push:*)",
             "Bash(git merge:*)",
