@@ -194,6 +194,11 @@ The constructor throws instead of failing silently:
 
 A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 
+### Server-side rendering
+
+Importing the module is safe without a browser. There, `ReadMore.init()` is a no-op that returns `[]`, and the
+constructor throws a `TypeError` (no `HTMLElement`).
+
 `lines` and `height` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or
 non-numeric strings throw a `RangeError`.
 

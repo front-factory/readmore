@@ -199,7 +199,8 @@ export class ReadMore {
     /**
      * @param element - The element to clamp.
      * @param options - See {@link ReadMoreOptions}.
-     * @throws TypeError - if `element` is not an `HTMLElement`.
+     * @throws TypeError - if `element` is not an `HTMLElement`, or there is no
+     * `HTMLElement` at all (no browser, e.g. SSR).
      * @throws Error - if `element` is already initialized; call
      * {@link ReadMore.destroy} first.
      * @throws RangeError - if `lines` is not an integer greater than or equal
@@ -209,7 +210,7 @@ export class ReadMore {
      * @throws TypeError - if `buttonContainer` is set but is not an `HTMLElement`.
      */
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
-        if (!(element instanceof HTMLElement)) {
+        if (typeof HTMLElement === 'undefined' || !(element instanceof HTMLElement)) {
             throw new TypeError('ReadMore: an HTMLElement is required.');
         }
 
@@ -276,17 +277,22 @@ export class ReadMore {
      * of elements (`NodeList`, `HTMLCollection`, array, `Set`…).
      * @param options - See {@link ReadMoreOptions}. Not applied to elements
      * that are already initialized.
-     * @param root - Where to look for `target` when it is a selector.
-     * @returns One instance per element, in document order.
+     * @param root - Where to look for `target` when it is a selector. Defaults to `document`.
+     * @returns One instance per element, in document order; `[]` without a
+     * browser (e.g. SSR).
      */
     static init(
         target: string | HTMLElement | Iterable<HTMLElement> | ArrayLike<HTMLElement>,
         options?: ReadMoreOptions,
-        root: ParentNode = document
+        root?: ParentNode
     ): ReadMore[] {
+        if (typeof HTMLElement === 'undefined' || typeof document === 'undefined') {
+            return [];
+        }
+
         const nodes =
             typeof target === 'string'
-                ? root.querySelectorAll<HTMLElement>(target)
+                ? (root ?? document).querySelectorAll<HTMLElement>(target)
                 : target instanceof HTMLElement ? [
                     target
                 ] : target;

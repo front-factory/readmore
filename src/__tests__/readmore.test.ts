@@ -1573,3 +1573,54 @@ describe('ReadMore - running CSS transitions', () => {
         expect(el.nextElementSibling).toBeNull();
     });
 });
+
+describe('ReadMore - without a browser (SSR)', () => {
+    /** Hides the given globals for the duration of `fn`, restoring them even on failure. */
+    async function withoutGlobals(names: Array<'HTMLElement' | 'document'>, fn: () => unknown): Promise<void> {
+        const originals = names.map((name) => globalThis[name]);
+
+        names.forEach((name) => vi.stubGlobal(name, undefined));
+
+        try {
+            await fn();
+        } finally {
+            names.forEach((name, i) => vi.stubGlobal(name, originals[i]));
+        }
+    }
+
+    it('init() returns [] instead of throwing', async () => {
+        await withoutGlobals([
+            'HTMLElement',
+            'document'
+        ], () => {
+            expect(ReadMore.init('.x')).toEqual([]);
+        });
+    });
+
+    it('init() returns [] when only HTMLElement is missing', async () => {
+        await withoutGlobals([
+            'HTMLElement'
+        ], () => {
+            expect(ReadMore.init('.x')).toEqual([]);
+        });
+    });
+
+    it('the constructor throws the documented TypeError', async () => {
+        await withoutGlobals([
+            'HTMLElement'
+        ], () => {
+            expect(() => new ReadMore({} as never)).toThrow(TypeError);
+            expect(() => new ReadMore({} as never)).toThrow('an HTMLElement is required');
+        });
+    });
+
+    it('importing the module does not throw', async () => {
+        await withoutGlobals([
+            'HTMLElement',
+            'document'
+        ], async () => {
+            vi.resetModules();
+            await expect(import('../readmore')).resolves.toBeDefined();
+        });
+    });
+});
