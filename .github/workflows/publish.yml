@@ -79,7 +79,8 @@ jobs:
 
       - name: Tests Reporter
         uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
-        if: always()
+        # Skipped on fork PRs: their read-only token cannot grant `checks: write`.
+        if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         with:
           name: Tests (Node ${{ matrix.node }})
           path: junit*.xml
