@@ -150,6 +150,57 @@ describe('ReadMore - constructor', () => {
         }
     });
 
+    it('throws RangeError when a state class is blank, contains whitespace or is not a string', () => {
+        for (const key of [
+            'expandedClass',
+            'openingClass',
+            'closingClass'
+        ] as const) {
+            for (const value of [
+                ' ',
+                'a b',
+                null,
+                1
+            ]) {
+                const el = makeEl();
+
+                expect(() => new ReadMore(el, {
+                    [key]: value
+                } as never)).toThrow(RangeError);
+
+                expect(ReadMore.getInstance(el)).toBeUndefined();
+            }
+        }
+    });
+
+    it('falls back to the default when a state class is an empty string', () => {
+        for (const key of [
+            'expandedClass',
+            'openingClass',
+            'closingClass'
+        ] as const) {
+            const rm = new ReadMore(makeEl(true), {
+                [key]: ''
+            });
+
+            expect(rm.options[key]).toBe(`is-${key.replace('Class', '')}`);
+            expect(() => rm.toggle()).not.toThrow();
+            expect(rm.el.classList.contains('is-expanded')).toBe(true);
+        }
+    });
+
+    it('accepts valid custom state classes', () => {
+        const rm = new ReadMore(makeEl(true), {
+            expandedClass: 'open',
+            openingClass: 'opening',
+            closingClass: 'closing'
+        });
+
+        expect(rm.options.expandedClass).toBe('open');
+        expect(() => rm.toggle()).not.toThrow();
+        rm.destroy();
+    });
+
     it('falls back to defaults for options explicitly set to undefined', () => {
         const el = makeEl(true);
         const rm = new ReadMore(el, {

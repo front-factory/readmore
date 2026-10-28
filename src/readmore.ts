@@ -198,6 +198,8 @@ export class ReadMore {
      * {@link ReadMore.destroy} first.
      * @throws RangeError - if `lines` is not an integer greater than or equal
      * to 1, or `height` is not a finite number greater than 0.
+     * @throws RangeError - if `expandedClass`, `openingClass` or `closingClass`
+     * is not a string or contains whitespace (an empty string means the default).
      * @throws TypeError - if `buttonContainer` is set but is not an `HTMLElement`.
      */
     constructor(element: HTMLElement, options: ReadMoreOptions = {}) {
@@ -210,10 +212,11 @@ export class ReadMore {
         }
 
         this.el = element;
-        // Options explicitly set to `undefined` must not override the defaults.
+        // Options explicitly set to `undefined` (or an empty state class) must not override the defaults.
         this.options = {
             ...DEFAULTS,
-            ...Object.fromEntries(Object.entries(options).filter((entry) => entry[1] !== undefined))
+            ...Object.fromEntries(Object.entries(options).filter((entry) => entry[1] !== undefined
+                && !(entry[1] === '' && entry[0].endsWith('Class'))))
         };
 
         // Numeric strings (data-* attributes, framework props) are accepted; blank or non-numeric ones still fail below.
@@ -240,6 +243,18 @@ export class ReadMore {
 
         if (!(Number.isInteger(lines) && lines >= 1)) {
             throw new RangeError('ReadMore: lines must be an integer of at least 1.');
+        }
+
+        for (const key of [
+            'expandedClass',
+            'openingClass',
+            'closingClass'
+        ] as const) {
+            const value: unknown = this.options[key];
+
+            if (typeof value !== 'string' || !/^\S+$/.test(value)) {
+                throw new RangeError(`ReadMore: ${key} must be a string without whitespace.`);
+            }
         }
 
         instances.set(element, this);

@@ -160,6 +160,8 @@ return (
 | `closingClass`    | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.                                   |
 | `onToggle`        | `(expanded: boolean, instance: ReadMore) => void` | —                | Callback fired after each toggle, before the `readmore:toggle` event (still dispatched if it throws). |
 
+For `expandedClass`, `openingClass` and `closingClass`, an empty string falls back to the default.
+
 ## API
 
 ```ts
@@ -183,11 +185,12 @@ ReadMore.getInstance(element);         // returns the ReadMore bound to an eleme
 
 The constructor throws instead of failing silently:
 
-| Error        | When                                                                          |
-|--------------|-------------------------------------------------------------------------------|
-| `TypeError`  | `element` is not an `HTMLElement`.                                            |
-| `Error`      | The element is already initialized — call `destroy()` before re-initializing. |
-| `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.   |
+| Error        | When                                                                                      |
+|--------------|-------------------------------------------------------------------------------------------|
+| `TypeError`  | `element` is not an `HTMLElement`.                                                        |
+| `Error`      | The element is already initialized — call `destroy()` before re-initializing.             |
+| `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.               |
+| `RangeError` | `expandedClass`, `openingClass` or `closingClass` is not a string or contains whitespace. |
 
 A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 
