@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/front-factory/readmore/compare/v1.5.0...v1.5.1) (2026-10-28)
+
+### Bug Fixes
+
+* **core:** resync instances when web fonts finish loading ([270bd74](https://github.com/front-factory/readmore/commit/270bd74ba322f4f55dda77c253cb93cc855e1899))
+* **core:** support server-side rendering ([861264c](https://github.com/front-factory/readmore/commit/861264c20cd2a57b27a00be86e9706e556b0c0ad))
+* **core:** validate state class options ([0298ea9](https://github.com/front-factory/readmore/commit/0298ea9b2d16cba380183fb887c81a72b47e65b5))
+
 ## [1.5.0](https://github.com/front-factory/readmore/compare/v1.4.0...v1.5.0) (2026-10-25)
 
 ### Features
