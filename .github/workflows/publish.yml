@@ -91,6 +91,11 @@ jobs:
     needs: test
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
 
+    # Two releases of the same ref never run in parallel, and none is cancelled.
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+
     permissions:
       contents: write
       issues: write
