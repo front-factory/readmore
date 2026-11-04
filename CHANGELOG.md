@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.0](https://github.com/front-factory/readmore/compare/v1.5.1...v1.6.0) (2026-11-04)
+
+### Features
+
+* add scrollOnCollapse option ([c25f8ee](https://github.com/front-factory/readmore/commit/c25f8ee2465aef3e319363c3cbd88facc888bc22))
+* **focus:** expand when focus lands in the hidden text ([b185c42](https://github.com/front-factory/readmore/commit/b185c42f1be4c1a249095a3c87dfcca49c1e8d30))
+* **height:** expose full content height as --readmore-full-height ([c8f963d](https://github.com/front-factory/readmore/commit/c8f963d338d0e5bf1f1641e67f3f1aae0d6fcc0e))
+
 ## [1.5.1](https://github.com/front-factory/readmore/compare/v1.5.0...v1.5.1) (2026-10-28)
 
 ### Bug Fixes
