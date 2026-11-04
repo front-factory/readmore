@@ -14,12 +14,13 @@ The stylesheet does one job: it clamps. Everything else, the button included, is
 | `.readmore-clamp--height`                 | Added with it in height mode. Clamps with `max-height` instead.         |
 | `.readmore-fade.readmore-clamp--height`   | Opt-in fade on the cut edge, height mode only.                          |
 
-The script writes two custom properties on the element, and removes them when you call `destroy()`:
+The script writes these custom properties on the element, and removes them when you call `destroy()`:
 
-| Property            | Set when    | Value                        |
-|---------------------|-------------|------------------------------|
-| `--readmore-lines`  | Lines mode  | The `lines` option           |
-| `--readmore-height` | Height mode | The `height` option, in `px` |
+| Property                 | Set when                      | Value                                                       |
+|--------------------------|-------------------------------|-------------------------------------------------------------|
+| `--readmore-lines`       | Lines mode                    | The `lines` option                                          |
+| `--readmore-height`      | Height mode                   | The `height` option, in `px`                                |
+| `--readmore-full-height` | Height mode, on each expand   | The full content height, in `px`; see [Animation](/guide/animation) |
 
 ## The button
 

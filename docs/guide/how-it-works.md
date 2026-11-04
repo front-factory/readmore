@@ -14,7 +14,8 @@ On creation, the element gets a class and a custom property:
 - **Lines mode** sets `--readmore-lines` and adds `readmore-clamp`. The stylesheet turns that into
   `-webkit-line-clamp`, which ends the last visible line with an ellipsis.
 - **Height mode** sets `--readmore-height` and adds `readmore-clamp` and `readmore-clamp--height`. The second class
-  switches to `max-height` and `display: block`.
+  switches to `max-height` and `display: block`. When the text expands, `--readmore-full-height` is also set to the
+  full content height, so an animation can target it.
 
 ## 2. Detect overflow
 
@@ -55,7 +56,7 @@ actually changes, as with `transition: all` in lines mode. When the timer ends, 
 
 ## 6. Destroy
 
-`destroy()` reverses everything: it stops observing, clears the timer, removes the button, the classes and the two custom
+`destroy()` reverses everything: it stops observing, clears the timer, removes the button, the classes and the custom
 properties, and drops the generated `id`. The element is then ready to be initialized again.
 
 ## Limits

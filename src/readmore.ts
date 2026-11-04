@@ -333,6 +333,11 @@ export class ReadMore {
             return;
         }
 
+        // Measured while still clamped: scrollHeight is then the full content height.
+        if (expanded && this.options.height != null) {
+            this.el.style.setProperty('--readmore-full-height', `${ this.el.scrollHeight }px`);
+        }
+
         this.#expanded = expanded;
         this.el.classList.toggle(CLAMP_CLASS, !this.#expanded);
 
@@ -415,6 +420,7 @@ export class ReadMore {
 
         this.el.style.removeProperty('--readmore-lines');
         this.el.style.removeProperty('--readmore-height');
+        this.el.style.removeProperty('--readmore-full-height');
 
         if (this.#generatedId) {
             this.el.removeAttribute('id');

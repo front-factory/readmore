@@ -223,7 +223,8 @@ new ReadMore(el, {
 The plugin sets a CSS custom property on the target element and toggles `.readmore-clamp`. In **lines mode** (default),
 it sets `--readmore-lines` and the bundled stylesheet applies `-webkit-line-clamp`, producing an ellipsis at the end of
 the last visible line. In **height mode** (`height` option), it sets `--readmore-height` and applies `max-height` via
-the `.readmore-clamp--height` modifier class instead. The toggle button is mounted (right after the element, or inside
+the `.readmore-clamp--height` modifier class instead. When expanding in height mode, it also sets `--readmore-full-height`
+(the full content height in `px`), handy as the `max-height` target of an animation. The toggle button is mounted (right after the element, or inside
 `buttonContainer` when set) only when the content actually overflows; a single `ResizeObserver`, shared by every instance, watches the elements and unmounts the
 button again if the text ends up fitting (or mounts it later if it starts overflowing). All resized elements are
 measured before any button is added or removed, to avoid a layout per element.

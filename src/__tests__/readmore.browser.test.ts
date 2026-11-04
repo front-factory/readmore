@@ -184,4 +184,33 @@ describe('ReadMore in a real browser', () => {
             timeout: 1000
         }).toBe(false);
     });
+
+    it('sets --readmore-full-height to the full content height on expand', () => {
+        const el = makeEl();
+        const rm = readMore(el, {
+            height: 50
+        });
+        const full = el.scrollHeight;
+
+        rm.toggle();
+        expect(el.style.getPropertyValue('--readmore-full-height')).toBe(`${ full }px`);
+        expect(full).toBeGreaterThan(50);
+    });
+
+    it('animates up to --readmore-full-height', async () => {
+        addStyle(`
+            .animated { overflow: hidden; transition: max-height 100ms linear; }
+            .animated.is-expanded { max-height: var(--readmore-full-height); }
+        `);
+
+        const el = makeEl(LONG_TEXT, 'animated');
+        const rm = readMore(el, {
+            height: 60
+        });
+        const full = el.scrollHeight;
+
+        rm.toggle();
+        await wait(250);
+        expect(el.clientHeight).toBe(full);
+    });
 });

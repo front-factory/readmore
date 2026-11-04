@@ -24,7 +24,7 @@ ReadMore.init('.excerpt', {
 }
 
 .excerpt.is-expanded {
-    max-height: 16rem;
+    max-height: var(--readmore-full-height);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -39,9 +39,11 @@ Three details make it work:
 - **`overflow: hidden` is yours.** The plugin removes `readmore-clamp`, and the `overflow: hidden` that comes with it,
   the moment the text expands. Without your own rule, the text would appear at once and only the box would animate.
 - **`max-height` on `.is-expanded` is the target.** A transition needs a value to reach, and `none` is not one.
-  Choose a height a little above the tallest text you expect. The browser animates over the whole distance up to that
-  value, so an oversized one makes the expansion finish early and the collapse start late, since the box has nothing to
-  move through between the text's height and the target. A value too small would cut the text off.
+  In height mode, the plugin sets `--readmore-full-height` on the element when it expands: the full content height,
+  in `px`, measured just before the classes change. Using it as the target makes the transition run exactly over the
+  text's height. A fixed value still works, but it must be a little above the tallest text you expect: an oversized
+  one makes the expansion finish early and the collapse start late, since the box has nothing to move through between
+  the text's height and the target, and one too small would cut the text off.
 - **Collapsing plays the same transition backwards**, from that target down to the `height` option.
 
 ## The transient classes

@@ -1624,3 +1624,35 @@ describe('ReadMore - without a browser (SSR)', () => {
         });
     });
 });
+
+describe('ReadMore - --readmore-full-height', () => {
+    it('is set on expand in height mode, measured from scrollHeight', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            height: 50
+        });
+
+        expect(el.style.getPropertyValue('--readmore-full-height')).toBe('');
+
+        rm.toggle();
+        expect(el.style.getPropertyValue('--readmore-full-height')).toBe('200px');
+    });
+
+    it('is not set in lines mode', () => {
+        const el = makeEl(true);
+
+        new ReadMore(el).toggle();
+        expect(el.style.getPropertyValue('--readmore-full-height')).toBe('');
+    });
+
+    it('is removed by destroy()', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            height: 50
+        });
+
+        rm.toggle();
+        rm.destroy();
+        expect(el.style.getPropertyValue('--readmore-full-height')).toBe('');
+    });
+});
