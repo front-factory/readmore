@@ -87,6 +87,14 @@ export interface ReadMoreOptions {
     closingClass?: string;
 
     /**
+     * Scrolls the element back into view when collapsing, if its top edge ended
+     * up above the viewport.
+     *
+     * @defaultValue false
+     */
+    scrollOnCollapse?: boolean;
+
+    /**
      * Called after each toggle with the resulting state, right before the
      * `readmore:toggle` event is dispatched.
      *
@@ -138,7 +146,8 @@ const DEFAULTS: ResolvedOptions = {
     buttonClass: 'readmore-btn',
     expandedClass: 'is-expanded',
     openingClass: 'is-opening',
-    closingClass: 'is-closing'
+    closingClass: 'is-closing',
+    scrollOnCollapse: false
 };
 
 /**
@@ -353,6 +362,12 @@ export class ReadMore {
 
         this.el.classList.remove(otherClass);
         this.#applyTransientClass(stateClass);
+
+        if (!this.#expanded && this.options.scrollOnCollapse && this.el.getBoundingClientRect().top < 0) {
+            this.el.scrollIntoView?.({
+                block: 'nearest'
+            });
+        }
 
         try {
             this.options.onToggle?.(this.#expanded, this);

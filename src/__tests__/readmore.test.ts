@@ -1656,3 +1656,69 @@ describe('ReadMore - --readmore-full-height', () => {
         expect(el.style.getPropertyValue('--readmore-full-height')).toBe('');
     });
 });
+
+describe('ReadMore - scrollOnCollapse', () => {
+    function mockScroll(el: HTMLElement, top: number): ReturnType<typeof vi.fn> {
+        const scrollIntoView = vi.fn();
+
+        el.scrollIntoView = scrollIntoView;
+        el.getBoundingClientRect = () => ({
+            top
+        }) as DOMRect;
+
+        return scrollIntoView;
+    }
+
+    it('defaults to false and never scrolls', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el);
+        const scrollIntoView = mockScroll(el, -100);
+
+        expect(rm.options.scrollOnCollapse).toBe(false);
+        rm.toggle();
+        rm.toggle();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it('scrolls into view on collapse when the top is above the viewport', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            scrollOnCollapse: true
+        });
+        const scrollIntoView = mockScroll(el, -100);
+
+        rm.toggle();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+
+        rm.toggle();
+        expect(scrollIntoView).toHaveBeenCalledWith({
+            block: 'nearest'
+        });
+    });
+
+    it('does not scroll when the top is already visible', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            scrollOnCollapse: true
+        });
+        const scrollIntoView = mockScroll(el, 10);
+
+        rm.toggle();
+        rm.toggle();
+        expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when scrollIntoView is missing', () => {
+        const el = makeEl(true);
+        const rm = new ReadMore(el, {
+            scrollOnCollapse: true
+        });
+
+        el.getBoundingClientRect = () => ({
+            top: -100
+        }) as DOMRect;
+
+        rm.toggle();
+        expect(() => rm.toggle()).not.toThrow();
+    });
+});

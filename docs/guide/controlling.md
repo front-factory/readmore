@@ -55,6 +55,17 @@ document.addEventListener('readmore:toggle', (event) => {
 
 If `onToggle` throws, the `readmore:toggle` event is still dispatched and the error is then re-thrown to the caller.
 
+## Scrolling back on collapse
+
+Collapsing a long text can leave the top of the element above the viewport. Set `scrollOnCollapse` to bring it back
+into view; it only scrolls when the top edge is above the viewport, and only on collapse:
+
+```ts
+ReadMore.init('.excerpt', {
+    scrollOnCollapse: true
+});
+```
+
 ## Finding an instance
 
 `ReadMore.getInstance()` returns the instance bound to an element, or `undefined`:

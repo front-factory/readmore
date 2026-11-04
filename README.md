@@ -158,6 +158,7 @@ return (
 | `expandedClass`   | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                                                   |
 | `openingClass`    | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.                                    |
 | `closingClass`    | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.                                   |
+| `scrollOnCollapse` | `boolean`                                        | `false`          | On collapse, scroll the element back into view if its top ended up above the viewport.               |
 | `onToggle`        | `(expanded: boolean, instance: ReadMore) => void` | —                | Callback fired after each toggle, before the `readmore:toggle` event (still dispatched if it throws). |
 
 For `expandedClass`, `openingClass` and `closingClass`, an empty string falls back to the default.

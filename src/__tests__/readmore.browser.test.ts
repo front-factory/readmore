@@ -213,4 +213,35 @@ describe('ReadMore in a real browser', () => {
         await wait(250);
         expect(el.clientHeight).toBe(full);
     });
+
+    it('scrolls the element back into view on collapse with scrollOnCollapse', () => {
+        const el = makeEl();
+        const rm = readMore(el, {
+            lines: 2,
+            scrollOnCollapse: true
+        });
+
+        el.style.marginBottom = '3000px';
+        el.scrollIntoView();
+        rm.toggle();
+        window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY + 1000);
+        expect(el.getBoundingClientRect().top).toBeLessThan(0);
+
+        rm.toggle();
+        expect(el.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    });
+
+    it('does not scroll on collapse without scrollOnCollapse', () => {
+        const el = makeEl();
+        const rm = readMore(el, {
+            lines: 2
+        });
+
+        el.style.marginBottom = '3000px';
+        rm.toggle();
+        window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY + 1000);
+
+        rm.toggle();
+        expect(el.getBoundingClientRect().top).toBeLessThan(0);
+    });
 });
