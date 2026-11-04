@@ -55,6 +55,14 @@ ReadMore.init('.excerpt', {
 
 Also set the `lang` attribute on the page or on the element, so the labels are read with the right voice.
 
+## Focus inside the hidden part
+
+If keyboard focus lands on an element in the clamped, hidden part of the text (a link, for example), the plugin expands
+the text so the focused element is visible. It fires the usual `readmore:toggle` event.
+
+This does not work in lines mode on Safari/WebKit, where `-webkit-line-clamp` keeps hidden inline elements in the visible
+area. For focusable content in clamped text, use height mode.
+
 ## What it leaves to you
 
 - **Focus.** A toggle leaves focus on the button. If the focused button is removed (the text stops overflowing, or

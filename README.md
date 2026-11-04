@@ -280,3 +280,6 @@ the `--readmore-fade-size` custom property:
   For rich content, prefer height mode.
 - Lines mode cannot be animated: neither `display` nor `line-clamp` can transition. For an animated expand/collapse, use
   height mode with a `max-height` transition.
+- In lines mode on Safari/WebKit, `-webkit-line-clamp` places hidden inline elements inside the visible area, so the
+  automatic expansion on focus does not trigger. It works in height mode on all browsers, and in lines mode on Chromium
+  and Firefox. For focusable content (links, buttons) in clamped text, prefer height mode.
