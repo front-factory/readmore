@@ -63,6 +63,65 @@ describe('ReadMore in a real browser', () => {
         expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
     });
 
+    describe('focus inside the clamped text', () => {
+        function makeWithLinks(): { el: HTMLElement;
+            visible: HTMLAnchorElement;
+            hidden: HTMLAnchorElement } {
+            const el = makeEl('');
+            const visible = document.createElement('a');
+            const hidden = document.createElement('a');
+
+            visible.href = hidden.href = '#';
+            visible.textContent = 'first';
+            hidden.textContent = 'last';
+            el.append(visible, ` ${ LONG_TEXT } `, hidden);
+
+            return {
+                el,
+                visible,
+                hidden 
+            };
+        }
+
+        // Height mode: WebKit places inline boxes hidden by -webkit-line-clamp inside the visible area.
+        it('expands when a hidden element receives focus', () => {
+            const { el, hidden } = makeWithLinks();
+            const rm = readMore(el, {
+                height: 50
+            });
+            let events = 0;
+
+            el.addEventListener('readmore:toggle', () => events++);
+            hidden.focus();
+
+            expect(rm.expanded).toBe(true);
+            expect(events).toBe(1);
+        });
+
+        it('stays collapsed when a visible element receives focus', () => {
+            const { el, visible } = makeWithLinks();
+            const rm = readMore(el, {
+                lines: 2
+            });
+
+            visible.focus();
+
+            expect(rm.expanded).toBe(false);
+        });
+
+        it('no longer expands after destroy()', () => {
+            const { el, hidden } = makeWithLinks();
+            const rm = readMore(el, {
+                height: 50
+            });
+
+            rm.destroy();
+            hidden.focus();
+
+            expect(rm.expanded).toBe(false);
+        });
+    });
+
     it('does not mount the button when the text fits', () => {
         const el = makeEl('Short text.');
 

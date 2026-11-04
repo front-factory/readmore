@@ -161,7 +161,8 @@ function toMs(list: string): number[] {
 /**
  * Clamps an element to a number of lines (or a fixed height) and mounts a
  * `Read more` / `Read less` button right after it, but only while the content
- * actually overflows.
+ * actually overflows. Focus landing on an element in the hidden part expands
+ * the text.
  *
  * @example
  * ```ts
@@ -198,6 +199,19 @@ export class ReadMore {
     #generatedId = false;
     #transientTimer: ReturnType<typeof setTimeout> | null = null;
     #onClick = (): void => this.toggle();
+
+    #onFocusIn = (e: FocusEvent): void => {
+        const { target } = e;
+
+        if (this.#expanded || !this.#button || target === this.el || !(target instanceof Element)) {
+            return;
+        }
+
+        // The browser may already have scrolled the hidden overflow to reveal the target: add it back.
+        if (target.getBoundingClientRect().bottom + this.el.scrollTop > this.el.getBoundingClientRect().bottom + 1) {
+            this.toggle(true);
+        }
+    };
 
     // Destroyed once the element is no longer bound to this instance: after
     // destroy(), or if the element was re-initialized by another instance.
@@ -412,6 +426,7 @@ export class ReadMore {
         }
 
         instances.delete(this.el);
+        this.el.removeEventListener('focusin', this.#onFocusIn);
         ReadMore.#resizeObserver?.unobserve(this.el);
 
         if (ReadMore.#live.delete(this) && ReadMore.#live.size === 0) {
@@ -474,6 +489,7 @@ export class ReadMore {
             this.el.classList.add(CLAMP_CLASS);
         }
 
+        this.el.addEventListener('focusin', this.#onFocusIn);
         ReadMore.#resizeObserver ??= new ResizeObserver(ReadMore.#onResize);
         ReadMore.#resizeObserver.observe(this.el);
 
