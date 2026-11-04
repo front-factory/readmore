@@ -1,9 +1,10 @@
-import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitepress';
 import baseConfig from '@frontfactory/vitepress-theme/config';
+import { version } from '../../package.json';
 
-const { version } = createRequire(import.meta.url)('../../package.json');
-
+const fontsDir = resolve(dirname(fileURLToPath(import.meta.url)), '../../node_modules/@fontsource/inter/files');
 const startYear = 2026;
 const thisYear = new Date().getFullYear();
 const years = thisYear > startYear ? `${startYear}–${thisYear}` : `${startYear}`;
@@ -25,23 +26,6 @@ export default defineConfig({
             {
                 text: 'API',
                 link: '/api/'
-            },
-            {
-                text: `v${version}`,
-                items: [
-                    {
-                        text: 'Changelog',
-                        link: 'https://github.com/front-factory/readmore/blob/main/CHANGELOG.md'
-                    },
-                    {
-                        text: 'Releases',
-                        link: 'https://github.com/front-factory/readmore/releases'
-                    },
-                    {
-                        text: 'npm',
-                        link: 'https://www.npmjs.com/package/@frontfactory/readmore'
-                    }
-                ]
             }
         ],
         sidebar: [
@@ -156,7 +140,37 @@ export default defineConfig({
                     ]
                 }
             ],
-            footerSocial: true
+            footerSocial: true,
+            llms: true,
+            copyMarkdown: true,
+            versions: {
+                current: `v${version}`,
+                items: [
+                    {
+                        text: `v${version} (latest)`,
+                        link: '/'
+                    },
+                    {
+                        text: 'All releases',
+                        link: 'https://github.com/front-factory/readmore/releases'
+                    }
+                ]
+            },
+            og: {
+                hostname: 'https://readmore.frontfactory.dev',
+                fonts: [
+                    {
+                        name: 'Inter',
+                        path: resolve(fontsDir, 'inter-latin-400-normal.woff'),
+                        weight: 400
+                    },
+                    {
+                        name: 'Inter',
+                        path: resolve(fontsDir, 'inter-latin-700-normal.woff'),
+                        weight: 700
+                    }
+                ]
+            }
         },
         footer: {
             message: 'Released under the MIT License.',
