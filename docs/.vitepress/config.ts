@@ -14,7 +14,7 @@ export default defineConfig({
     title: 'Readmore',
     titleTemplate: ':title | Readmore',
     description: 'Clamp text to N lines or a fixed height, with an accessible read more / read less toggle.',
-    lastUpdated: true,
+    lastUpdated: false,
     cleanUrls: true,
     themeConfig: {
         nav: [
