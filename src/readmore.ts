@@ -6,17 +6,31 @@ export interface ReadMoreOptions {
      * Number of lines to clamp to. Ignored when {@link ReadMoreOptions.height} is set.
      *
      * @defaultValue 3
+     * Can also be a function called with the element; the returned value is
+     * validated like a literal one and re-evaluated on {@link ReadMore.refresh}.
+     *
      * @throws RangeError - if not an integer greater than or equal to 1.
      */
-    lines?: number;
+    lines?: number | ((el: HTMLElement) => number);
 
     /**
      * Max height in pixels. Takes precedence over {@link ReadMoreOptions.lines}
      * and clamps with `max-height` instead of `-webkit-line-clamp`.
+     * Can also be a function called with the element; the returned value is
+     * validated like a literal one and re-evaluated on {@link ReadMore.refresh}.
      *
      * @throws RangeError - if not a finite number greater than 0.
      */
-    height?: number;
+    height?: number | ((el: HTMLElement) => number);
+
+    /**
+     * Hidden overflow in pixels tolerated before the button is mounted: the
+     * button only appears when more than this is hidden (at least 1px).
+     *
+     * @defaultValue 0
+     * @throws RangeError - if not a finite number greater than or equal to 0.
+     */
+    threshold?: number;
 
     /**
      * Label of the toggle button while the text is collapsed.
@@ -102,9 +116,20 @@ export interface ReadMoreOptions {
      * @param instance - The instance that was toggled.
      */
     onToggle?: (expanded: boolean, instance: ReadMore) => void;
+
+    /**
+     * Called before a toggle that would really happen, with the state it is
+     * about to enter. Returning exactly `false` cancels it (the
+     * `readmore:beforetoggle` event is then not dispatched). If it throws, the
+     * error propagates and the toggle does not happen.
+     *
+     * @param expanded - `true` if about to expand, `false` if about to collapse.
+     * @param instance - The instance about to be toggled.
+     */
+    onBeforeToggle?: (expanded: boolean, instance: ReadMore) => boolean | void;
 }
 
-type OptionalKeys = 'height' | 'buttonContainer' | 'moreLabel' | 'lessLabel' | 'onToggle';
+type OptionalKeys = 'height' | 'buttonContainer' | 'moreLabel' | 'lessLabel' | 'onToggle' | 'onBeforeToggle';
 
 /**
  * {@link ReadMoreOptions} merged with the defaults, as exposed on
@@ -122,14 +147,17 @@ export interface ReadMoreToggleDetail {
 }
 
 // Types `event.detail` in `addEventListener('readmore:toggle', …)`, on elements
-// and on `document` (the event bubbles).
+// and on `document` (the event bubbles). `readmore:beforetoggle` is cancelable
+// and carries the state about to be entered.
 declare global {
     interface HTMLElementEventMap {
         'readmore:toggle': CustomEvent<ReadMoreToggleDetail>;
+        'readmore:beforetoggle': CustomEvent<ReadMoreToggleDetail>;
     }
 
     interface DocumentEventMap {
         'readmore:toggle': CustomEvent<ReadMoreToggleDetail>;
+        'readmore:beforetoggle': CustomEvent<ReadMoreToggleDetail>;
     }
 }
 
@@ -141,6 +169,7 @@ let idCounter = 0;
 
 const DEFAULTS: ResolvedOptions = {
     lines: 3,
+    threshold: 0,
     moreText: 'Read more',
     lessText: 'Read less',
     buttonClass: 'readmore-btn',
@@ -199,6 +228,8 @@ export class ReadMore {
     #generatedId = false;
     #transientTimer: ReturnType<typeof setTimeout> | null = null;
     #onClick = (): void => this.toggle();
+    #lines = DEFAULTS.lines as number;
+    #height: number | undefined;
 
     #onFocusIn = (e: FocusEvent): void => {
         const { target } = e;
@@ -227,7 +258,9 @@ export class ReadMore {
      * @throws Error - if `element` is already initialized; call
      * {@link ReadMore.destroy} first.
      * @throws RangeError - if `lines` is not an integer greater than or equal
-     * to 1, or `height` is not a finite number greater than 0.
+     * to 1, `height` is not a finite number greater than 0, or `threshold` is
+     * not a finite number greater than or equal to 0 (for `lines` and `height`,
+     * the value returned by a function is checked).
      * @throws RangeError - if `expandedClass`, `openingClass` or `closingClass`
      * is not a string or contains whitespace (an empty string means the default).
      * @throws TypeError - if `buttonContainer` is set but is not an `HTMLElement`.
@@ -252,7 +285,8 @@ export class ReadMore {
         // Numeric strings (data-* attributes, framework props) are accepted; blank or non-numeric ones still fail below.
         for (const key of [
             'height',
-            'lines'
+            'lines',
+            'threshold'
         ] as const) {
             const value: unknown = this.options[key];
 
@@ -261,18 +295,16 @@ export class ReadMore {
             }
         }
 
-        const { height, lines, buttonContainer } = this.options;
+        const { threshold, buttonContainer } = this.options;
 
         if (buttonContainer != null && !(buttonContainer instanceof HTMLElement)) {
             throw new TypeError('ReadMore: buttonContainer must be an HTMLElement.');
         }
 
-        if (height != null && !(Number.isFinite(height) && height > 0)) {
-            throw new RangeError('ReadMore: height must be a finite number greater than 0.');
-        }
+        this.#resolveSizes();
 
-        if (!(Number.isInteger(lines) && lines >= 1)) {
-            throw new RangeError('ReadMore: lines must be an integer of at least 1.');
+        if (!(Number.isFinite(threshold) && threshold >= 0)) {
+            throw new RangeError('ReadMore: threshold must be a finite number of at least 0.');
         }
 
         for (const key of [
@@ -345,7 +377,8 @@ export class ReadMore {
      *
      * @param force - `true` to expand, `false` to collapse; the state is
      * inverted when omitted. Does nothing if the text is already in the
-     * requested state.
+     * requested state. Before a real toggle, {@link ReadMoreOptions.onBeforeToggle}
+     * and a cancelable `readmore:beforetoggle` event can cancel it.
      */
     toggle(force?: boolean): void {
         // Only a real boolean forces the state, so `toggle` still works as an
@@ -353,6 +386,23 @@ export class ReadMore {
         const expanded = typeof force === 'boolean' ? force : !this.#expanded;
 
         if (this.#destroyed || expanded === this.#expanded) {
+            return;
+        }
+
+        if (this.options.onBeforeToggle?.(expanded, this) === false) {
+            return;
+        }
+
+        const before = new CustomEvent<ReadMoreToggleDetail>('readmore:beforetoggle', {
+            bubbles: true,
+            cancelable: true,
+            detail: {
+                expanded,
+                instance: this
+            }
+        });
+
+        if (!this.el.dispatchEvent(before)) {
             return;
         }
 
@@ -404,7 +454,43 @@ export class ReadMore {
      * while expanded, during a toggle transition, or once destroyed.
      */
     refresh(): void {
+        if (!this.#destroyed) {
+            this.#resolveSizes();
+            this.#applySizes();
+        }
+
         this.#sync(this.#isOverflowing());
+    }
+
+    // Evaluates function values of `lines` / `height` (on the element), then validates like literals.
+    #resolveSizes(): void {
+        const read = (value: unknown): unknown => {
+            const result = typeof value === 'function' ? value(this.el) : value;
+
+            return typeof result === 'string' && result.trim() !== '' ? Number(result) : result;
+        };
+
+        const height = read(this.options.height) as number | undefined;
+        const lines = read(this.options.lines) as number;
+
+        if (height != null && !(Number.isFinite(height) && height > 0)) {
+            throw new RangeError('ReadMore: height must be a finite number greater than 0.');
+        }
+
+        if (!(Number.isInteger(lines) && lines >= 1)) {
+            throw new RangeError('ReadMore: lines must be an integer of at least 1.');
+        }
+
+        this.#height = height;
+        this.#lines = lines;
+    }
+
+    #applySizes(): void {
+        if (this.options.height != null) {
+            this.el.style.setProperty('--readmore-height', `${ this.#height }px`);
+        } else {
+            this.el.style.setProperty('--readmore-lines', String(this.#lines));
+        }
     }
 
     /**
@@ -481,12 +567,11 @@ export class ReadMore {
     }
 
     #init(): void {
+        this.#applySizes();
+        this.el.classList.add(CLAMP_CLASS);
+
         if (this.options.height != null) {
-            this.el.style.setProperty('--readmore-height', `${ this.options.height }px`);
-            this.el.classList.add(CLAMP_CLASS, CLAMP_HEIGHT_CLASS);
-        } else {
-            this.el.style.setProperty('--readmore-lines', String(this.options.lines));
-            this.el.classList.add(CLAMP_CLASS);
+            this.el.classList.add(CLAMP_HEIGHT_CLASS);
         }
 
         this.el.addEventListener('focusin', this.#onFocusIn);
@@ -537,7 +622,7 @@ export class ReadMore {
     }
 
     #isOverflowing(): boolean {
-        return this.el.scrollHeight - this.el.clientHeight > 1;
+        return this.el.scrollHeight - this.el.clientHeight > Math.max(1, this.options.threshold);
     }
 
     #sync(overflowing: boolean): void {

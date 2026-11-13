@@ -152,6 +152,255 @@ describe('ReadMore - constructor', () => {
         }
     });
 
+    describe('function values for lines and height', () => {
+        it('uses the returned value for lines and keeps the function in options', () => {
+            const el = makeEl();
+            const fn = vi.fn(() => 2);
+            const rm = new ReadMore(el, {
+                lines: fn
+            });
+
+            expect(fn).toHaveBeenCalledWith(el);
+            expect(el.style.getPropertyValue('--readmore-lines')).toBe('2');
+            expect(rm.options.lines).toBe(fn);
+        });
+
+        it('uses the returned value for height and selects height mode', () => {
+            const el = makeEl();
+
+            new ReadMore(el, {
+                height: () => 120
+            });
+
+            expect(el.style.getPropertyValue('--readmore-height')).toBe('120px');
+            expect(el.classList.contains('readmore-clamp--height')).toBe(true);
+        });
+
+        it('evaluates per element with init', () => {
+            const a = makeEl();
+            const b = makeEl();
+
+            a.dataset.n = '1';
+            b.dataset.n = '4';
+            ReadMore.init([
+                a,
+                b
+            ], {
+                lines: (el) => Number(el.dataset.n)
+            });
+
+            expect(a.style.getPropertyValue('--readmore-lines')).toBe('1');
+            expect(b.style.getPropertyValue('--readmore-lines')).toBe('4');
+        });
+
+        it('accepts a numeric string and rejects invalid returned values', () => {
+            const el = makeEl();
+
+            new ReadMore(el, {
+                lines: () => '3' as unknown as number
+            });
+
+            expect(el.style.getPropertyValue('--readmore-lines')).toBe('3');
+
+            for (const lines of [
+                0,
+                2.5,
+                NaN,
+                ''
+            ]) {
+                expect(() => new ReadMore(makeEl(), {
+                    lines: () => lines as number
+                })).toThrow(RangeError);
+            }
+
+            for (const height of [
+                0,
+                -1,
+                Infinity,
+                'abc'
+            ]) {
+                expect(() => new ReadMore(makeEl(), {
+                    height: () => height as number
+                })).toThrow(RangeError);
+            }
+        });
+
+        it('re-evaluates on refresh() and updates the custom property', () => {
+            const el = makeEl();
+            let value = 2;
+            const rm = new ReadMore(el, {
+                lines: () => value
+            });
+
+            value = 5;
+            rm.refresh();
+            expect(el.style.getPropertyValue('--readmore-lines')).toBe('5');
+
+            const heightEl = makeEl();
+            let h = 100;
+            const rmHeight = new ReadMore(heightEl, {
+                height: () => h
+            });
+
+            h = 60;
+            rmHeight.refresh();
+            expect(heightEl.style.getPropertyValue('--readmore-height')).toBe('60px');
+        });
+    });
+
+    describe('cancelable toggle', () => {
+        it('passes the target state to onBeforeToggle and to the beforetoggle event', () => {
+            const el = makeEl(true);
+            const calls: boolean[] = [];
+            const events: boolean[] = [];
+
+            el.addEventListener('readmore:beforetoggle', (e) => events.push((e as CustomEvent).detail.expanded));
+            const rm = new ReadMore(el, {
+                onBeforeToggle: (expanded, instance) => {
+                    calls.push(expanded);
+                    expect(instance).toBe(rm);
+                }
+            });
+
+            rm.toggle();
+            rm.toggle();
+            expect(calls).toEqual([
+                true,
+                false
+            ]);
+
+            expect(events).toEqual([
+                true,
+                false
+            ]);
+        });
+
+        it('cancels when the callback returns false, without dispatching the event', () => {
+            const el = makeEl(true);
+            const onToggle = vi.fn();
+            const before = vi.fn();
+            const toggled = vi.fn();
+
+            el.addEventListener('readmore:beforetoggle', before);
+            el.addEventListener('readmore:toggle', toggled);
+            const rm = new ReadMore(el, {
+                onBeforeToggle: () => false,
+                onToggle
+            });
+
+            rm.toggle();
+            expect(rm.expanded).toBe(false);
+            expect(el.classList.contains('is-expanded')).toBe(false);
+            expect(el.classList.contains('readmore-clamp')).toBe(true);
+            expect(rm.el.nextElementSibling?.getAttribute('aria-expanded')).toBe('false');
+            expect(before).not.toHaveBeenCalled();
+            expect(onToggle).not.toHaveBeenCalled();
+            expect(toggled).not.toHaveBeenCalled();
+        });
+
+        it('cancels when the event is default-prevented', () => {
+            const el = makeEl(true);
+            const onToggle = vi.fn();
+            const toggled = vi.fn();
+            const rm = new ReadMore(el, {
+                onToggle
+            });
+
+            el.addEventListener('readmore:beforetoggle', (e) => e.preventDefault());
+            el.addEventListener('readmore:toggle', toggled);
+            rm.toggle();
+            expect(rm.expanded).toBe(false);
+            expect(onToggle).not.toHaveBeenCalled();
+            expect(toggled).not.toHaveBeenCalled();
+        });
+
+        it('allows the toggle when the callback returns undefined or true', () => {
+            for (const result of [
+                undefined,
+                true
+            ]) {
+                const rm = new ReadMore(makeEl(true), {
+                    onBeforeToggle: () => result
+                });
+
+                rm.toggle();
+                expect(rm.expanded).toBe(true);
+            }
+        });
+
+        it('does not call the callback or dispatch the event on a no-op toggle', () => {
+            const el = makeEl(true);
+            const onBeforeToggle = vi.fn();
+            const before = vi.fn();
+            const rm = new ReadMore(el, {
+                onBeforeToggle
+            });
+
+            el.addEventListener('readmore:beforetoggle', before);
+            rm.toggle(false);
+            expect(onBeforeToggle).not.toHaveBeenCalled();
+            rm.toggle(true);
+            onBeforeToggle.mockClear();
+            before.mockClear();
+            rm.toggle(true);
+            expect(onBeforeToggle).not.toHaveBeenCalled();
+            expect(before).not.toHaveBeenCalled();
+        });
+
+        it('propagates an exception thrown by the callback and does not toggle', () => {
+            const rm = new ReadMore(makeEl(true), {
+                onBeforeToggle: () => {
+                    throw new Error('boom');
+                }
+            });
+
+            expect(() => rm.toggle()).toThrow('boom');
+            expect(rm.expanded).toBe(false);
+        });
+    });
+
+    it('defaults threshold to 0 and accepts numeric strings and non-negative numbers', () => {
+        const defaults = new ReadMore(makeEl());
+
+        expect(defaults.options.threshold).toBe(0);
+        defaults.destroy();
+
+        const rm = new ReadMore(makeEl(), {
+            threshold: '16' as unknown as number
+        });
+
+        expect(rm.options.threshold).toBe(16);
+        rm.destroy();
+    });
+
+    it('throws RangeError when threshold is negative, not finite or not numeric', () => {
+        for (const threshold of [
+            -1,
+            NaN,
+            Infinity,
+            '',
+            ' ',
+            'abc'
+        ]) {
+            expect(() => new ReadMore(makeEl(), {
+                threshold: threshold as number
+            })).toThrow(RangeError);
+        }
+    });
+
+    it('mounts the button only when the hidden overflow is greater than threshold', () => {
+        // setOverflow(el, true) hides 150px.
+        const over = new ReadMore(makeEl(true), {
+            threshold: 149
+        });
+        const atLimit = new ReadMore(makeEl(true), {
+            threshold: 150
+        });
+
+        expect(over.el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+        expect(atLimit.el.nextElementSibling).toBeNull();
+    });
+
     it('throws RangeError when a state class is blank, contains whitespace or is not a string', () => {
         for (const key of [
             'expandedClass',

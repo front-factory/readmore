@@ -102,6 +102,18 @@ document.addEventListener('readmore:toggle', (event) => {
 });
 ```
 
+To veto a toggle, return `false` from the `onBeforeToggle` option, or call `preventDefault()` on the cancelable
+`readmore:beforetoggle` event. Both receive the state about to be entered (`expanded`); the callback runs first, and the
+event is not dispatched if it returned `false`. A cancelled toggle changes nothing and fires neither `onToggle` nor
+`readmore:toggle`. If `onBeforeToggle` throws, the error propagates and the toggle does not happen. It only runs for
+toggles that would really happen (no-ops are skipped), including the automatic expansion on focus.
+
+```ts
+document.addEventListener('readmore:beforetoggle', (event) => {
+    if (event.detail.expanded && !userMayExpand) event.preventDefault();
+});
+```
+
 Pass `true` or `false` to `toggle()` to force a state, e.g. for an "Expand all" button. Instances already in that
 state are left untouched and fire neither `onToggle` nor the event:
 
@@ -145,21 +157,23 @@ return (
 
 ## Options
 
-| Option            | Type                                              | Default          | Description                                                                                           |
-|-------------------|---------------------------------------------------|------------------|-------------------------------------------------------------------------------------------------------|
-| `lines`           | `number`                                          | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set.                                    |
-| `height`          | `number`                                          | —                | Max height in pixels (greater than `0`). Takes precedence over `lines`.                                        |
-| `moreText`        | `string`                                          | `'Read more'`    | Label of the button when the text is collapsed.                                                       |
-| `lessText`        | `string`                                          | `'Read less'`    | Label of the button when the text is expanded.                                                        |
-| `moreLabel`       | `string`                                          | —                | `aria-label` of the button when collapsed. Should contain `moreText`.                                 |
-| `lessLabel`       | `string`                                          | —                | `aria-label` of the button when expanded. Should contain `lessText`.                                  |
-| `buttonClass`     | `string`                                          | `'readmore-btn'` | Class applied to the toggle button.                                                                   |
-| `buttonContainer` | `HTMLElement`                                     | —                | Element the button is appended to, instead of being inserted after the text.                          |
-| `expandedClass`   | `string`                                          | `'is-expanded'`  | Class applied to the target element while expanded.                                                   |
-| `openingClass`    | `string`                                          | `'is-opening'`   | Transient class applied while expanding, removed after transition.                                    |
-| `closingClass`    | `string`                                          | `'is-closing'`   | Transient class applied while collapsing, removed after transition.                                   |
-| `scrollOnCollapse` | `boolean`                                        | `false`          | On collapse, scroll the element back into view if its top ended up above the viewport.               |
-| `onToggle`        | `(expanded: boolean, instance: ReadMore) => void` | —                | Callback fired after each toggle, before the `readmore:toggle` event (still dispatched if it throws). |
+| Option             | Type                                                         | Default          | Description                                                                                                    |
+|--------------------|--------------------------------------------------------------|------------------|----------------------------------------------------------------------------------------------------------------|
+| `lines`            | `number \| (el) => number`                                   | `3`              | Number of lines to clamp to (min `1`). Ignored if `height` is set. A function is called with the element.      |
+| `height`           | `number \| (el) => number`                                   | —                | Max height in pixels (greater than `0`). Takes precedence over `lines`. A function is called with the element. |
+| `threshold`        | `number`                                                     | `0`              | Hidden overflow in pixels tolerated before the button is mounted (min `0`; at least 1px is always required).   |
+| `moreText`         | `string`                                                     | `'Read more'`    | Label of the button when the text is collapsed.                                                                |
+| `lessText`         | `string`                                                     | `'Read less'`    | Label of the button when the text is expanded.                                                                 |
+| `moreLabel`        | `string`                                                     | —                | `aria-label` of the button when collapsed. Should contain `moreText`.                                          |
+| `lessLabel`        | `string`                                                     | —                | `aria-label` of the button when expanded. Should contain `lessText`.                                           |
+| `buttonClass`      | `string`                                                     | `'readmore-btn'` | Class applied to the toggle button.                                                                            |
+| `buttonContainer`  | `HTMLElement`                                                | —                | Element the button is appended to, instead of being inserted after the text.                                   |
+| `expandedClass`    | `string`                                                     | `'is-expanded'`  | Class applied to the target element while expanded.                                                            |
+| `openingClass`     | `string`                                                     | `'is-opening'`   | Transient class applied while expanding, removed after transition.                                             |
+| `closingClass`     | `string`                                                     | `'is-closing'`   | Transient class applied while collapsing, removed after transition.                                            |
+| `scrollOnCollapse` | `boolean`                                                    | `false`          | On collapse, scroll the element back into view if its top ended up above the viewport.                         |
+| `onBeforeToggle`   | `(expanded: boolean, instance: ReadMore) => boolean \| void` | —                | Called before a toggle with the state about to be entered; returning `false` cancels it.                       |
+| `onToggle`         | `(expanded: boolean, instance: ReadMore) => void`            | —                | Callback fired after each toggle, before the `readmore:toggle` event (still dispatched if it throws).          |
 
 For `expandedClass`, `openingClass` and `closingClass`, an empty string falls back to the default.
 
@@ -186,12 +200,12 @@ ReadMore.getInstance(element);         // returns the ReadMore bound to an eleme
 
 The constructor throws instead of failing silently:
 
-| Error        | When                                                                                      |
-|--------------|-------------------------------------------------------------------------------------------|
-| `TypeError`  | `element` is not an `HTMLElement`.                                                        |
-| `Error`      | The element is already initialized — call `destroy()` before re-initializing.             |
-| `RangeError` | `lines` is not an integer `>= 1`, or `height` is not a finite number `> 0`.               |
-| `RangeError` | `expandedClass`, `openingClass` or `closingClass` is not a string or contains whitespace. |
+| Error        | When                                                                                                                   |
+|--------------|------------------------------------------------------------------------------------------------------------------------|
+| `TypeError`  | `element` is not an `HTMLElement`.                                                                                     |
+| `Error`      | The element is already initialized — call `destroy()` before re-initializing.                                          |
+| `RangeError` | `lines` is not an integer `>= 1`, `height` is not a finite number `> 0`, or `threshold` is not a finite number `>= 0`. |
+| `RangeError` | `expandedClass`, `openingClass` or `closingClass` is not a string or contains whitespace.                              |
 
 A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 
@@ -200,8 +214,22 @@ A `buttonContainer` that is not an `HTMLElement` also throws a `TypeError`.
 Importing the module is safe without a browser. There, `ReadMore.init()` is a no-op that returns `[]`, and the
 constructor throws a `TypeError` (no `HTMLElement`).
 
-`lines` and `height` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or
+`lines`, `height` and `threshold` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or
 non-numeric strings throw a `RangeError`.
+
+`lines` and `height` can also be a function, called with the element, whose returned value is validated like a literal
+one (a `RangeError` if invalid). It runs at construction and on each `refresh()`, not on every resize: call
+`refresh()` from your own breakpoint listener to re-evaluate it.
+
+```js
+ReadMore.init('.excerpt', {
+    lines: (el) => (window.innerWidth < 600 ? 2 : Number(el.dataset.lines) || 4)
+});
+
+matchMedia('(max-width: 600px)').addEventListener('change', () => {
+    document.querySelectorAll('.excerpt').forEach((el) => ReadMore.getInstance(el)?.refresh());
+});
+```
 
 ## Accessibility
 

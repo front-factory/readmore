@@ -290,6 +290,107 @@ describe('ReadMore in a real browser', () => {
         expect(el.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
     });
 
+    // Clamping shortens the page, which can remove its scrollbar and widen the
+    // element so the text fits. The clamp stays on, so the layout must settle.
+    it('settles when clamping removes the page scrollbar', async () => {
+        const el = makeEl();
+        const filler = document.createElement('div');
+        const word = 'x'.repeat(Math.floor(document.documentElement.clientWidth / 9.6 / 2) - 1);
+
+        document.body.style.margin = '0';
+        el.style.width = 'auto';
+        el.textContent = `${ word } ${ word }`;
+        filler.style.height = `${ window.innerHeight - 30 }px`;
+        document.body.appendChild(filler);
+
+        const rm = readMore(el, {
+            lines: 1
+        });
+        const states: boolean[] = [];
+
+        for (let i = 0; i < 10; i++) {
+            states.push(rm.el.nextElementSibling instanceof HTMLButtonElement);
+            await new Promise(requestAnimationFrame);
+        }
+
+        document.body.style.margin = '';
+        expect(states.filter((state, i) => i > 0 && state !== states[i - 1]).length).toBeLessThanOrEqual(1);
+    });
+
+    // An image loading in a clamped element does not resize the element itself,
+    // so the ResizeObserver stays silent while the content now overflows.
+    it('mounts the button when an image loads and makes the content overflow', async () => {
+        const el = makeEl('short');
+        const img = document.createElement('img');
+        const loaded = new Promise((resolve) => img.addEventListener('load', resolve));
+
+        el.appendChild(img);
+        readMore(el, {
+            height: 50
+        });
+
+        expect(el.nextElementSibling).toBeNull();
+
+        img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="200"></svg>';
+        await loaded;
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+
+        expect(el.scrollHeight).toBeGreaterThan(50);
+        expect(el.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+    });
+
+    it('mounts the button only when the hidden overflow is greater than threshold', () => {
+        // 3 lines of content (60px) in a 50px clamp: 10px hidden.
+        const strict = makeEl('a\nb\nc', '');
+        const tolerant = makeEl('a\nb\nc', '');
+
+        strict.style.whiteSpace = tolerant.style.whiteSpace = 'pre';
+        readMore(strict, {
+            height: 50
+        });
+
+        readMore(tolerant, {
+            height: 50,
+            threshold: 16
+        });
+
+        expect(strict.scrollHeight - strict.clientHeight).toBeGreaterThan(1);
+        expect(strict.nextElementSibling).toBeInstanceOf(HTMLButtonElement);
+        expect(tolerant.nextElementSibling).toBeNull();
+    });
+
+    it('clamps each element to the number of lines returned by a function', () => {
+        const one = makeEl();
+        const three = makeEl();
+
+        one.dataset.lines = '1';
+        three.dataset.lines = '3';
+        ReadMore.init([
+            one,
+            three
+        ], {
+            lines: (el) => Number(el.dataset.lines)
+        }).forEach((instance) => instances.push(instance));
+
+        expect(one.clientHeight).toBe(LINE_HEIGHT);
+        expect(three.clientHeight).toBe(3 * LINE_HEIGHT);
+    });
+
+    it('keeps the text clamped when a beforetoggle listener cancels the button click', () => {
+        const el = makeEl();
+
+        readMore(el, {
+            lines: 2
+        });
+
+        el.addEventListener('readmore:beforetoggle', (e) => e.preventDefault());
+        (el.nextElementSibling as HTMLButtonElement).click();
+
+        expect(el.clientHeight).toBe(2 * LINE_HEIGHT);
+        expect(el.nextElementSibling?.getAttribute('aria-expanded')).toBe('false');
+    });
+
     it('does not scroll on collapse without scrollOnCollapse', () => {
         const el = makeEl();
         const rm = readMore(el, {
