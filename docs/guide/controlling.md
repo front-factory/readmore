@@ -55,6 +55,20 @@ document.addEventListener('readmore:toggle', (event) => {
 
 If `onToggle` throws, the `readmore:toggle` event is still dispatched and the error is then re-thrown to the caller.
 
+## Cancelling a toggle
+
+To veto a toggle, return `false` from the `onBeforeToggle` option, or call `preventDefault()` on the cancelable
+`readmore:beforetoggle` event. Both receive the state about to be entered (`expanded`); the callback runs first, and the
+event is not dispatched if it returned `false`. A cancelled toggle changes nothing and fires neither `onToggle` nor
+`readmore:toggle`. If `onBeforeToggle` throws, the error propagates and the toggle does not happen. It only runs for
+toggles that would really happen (no-ops are skipped), including the automatic expansion on focus.
+
+```ts
+document.addEventListener('readmore:beforetoggle', (event) => {
+    if (event.detail.expanded && !userMayExpand) event.preventDefault();
+});
+```
+
 ## Scrolling back on collapse
 
 Collapsing a long text can leave the top of the element above the viewport. Set `scrollOnCollapse` to bring it back
@@ -94,6 +108,9 @@ instance.refresh();
 ```
 
 `refresh()` does nothing while the text is expanded, during a toggle transition, or once the instance is destroyed.
+
+It also re-evaluates `lines` and `height` when they are [functions](/guide/modes#function-values), which are not
+re-run on resize: call `refresh()` from your own breakpoint listener.
 
 ## Adding elements later
 

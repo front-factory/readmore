@@ -28,6 +28,9 @@ ReadMore.init('.excerpt', {
 `lines` must be an integer of at least `1`; anything else throws a `RangeError`. Numeric strings such as `'3'` are accepted; blank or
 non-numeric strings throw a `RangeError`.
 
+`lines` can also be a function, called with the element, to vary it per element; see
+[Function values](#function-values).
+
 ## Height
 
 `height` is a maximum height **in pixels**. The element is clamped with `max-height` instead of a line count:
@@ -54,6 +57,30 @@ property; see [Styling](/guide/styling#fade).
 
 `height` must be a finite number greater than `0`; anything else throws a `RangeError`. Numeric strings such as `'80'` are accepted; blank or
 non-numeric strings throw a `RangeError`.
+
+## Function values
+
+`lines` and `height` can also be a function, called with the element, whose returned value is validated like a literal
+one (a `RangeError` if invalid). It runs at construction and on each `refresh()`, not on every resize: call `refresh()`
+from your own breakpoint listener to re-evaluate it.
+
+```ts
+ReadMore.init('.excerpt', {
+    lines: (el) => (window.innerWidth < 600 ? 2 : Number(el.dataset.lines) || 4)
+});
+```
+
+## Ignoring a small overflow
+
+By default the button appears as soon as more than 1px is hidden. Set `threshold` to the number of hidden pixels you
+tolerate: the button is only mounted when more than that is hidden. It must be a finite number of at least `0`, and
+numeric strings are accepted.
+
+```ts
+ReadMore.init('.excerpt', {
+    threshold: 16
+});
+```
 
 ## Choosing
 

@@ -20,7 +20,8 @@ On creation, the element gets a class and a custom property:
 ## 2. Detect overflow
 
 The text overflows when its content is taller than its box: `scrollHeight - clientHeight > 1`. A difference of
-one pixel or less is ignored, so a text that fits, give or take a rounding error, gets no button.
+one pixel or less is ignored, so a text that fits, give or take a rounding error, gets no button. The `threshold`
+option raises that limit: the button only appears when more than `threshold` pixels are hidden.
 
 ## 3. Mount the button
 
@@ -46,10 +47,12 @@ since the size is not final yet.
 
 `toggle()` runs, in this order:
 
-1. Flips the classes: `readmore-clamp` (and `readmore-clamp--height`) go away when expanded, `expandedClass` comes in.
-2. Updates the button's text, `aria-expanded` and `aria-label`.
-3. Starts the transient class, `openingClass` or `closingClass`, for the length of the element's longest transition.
-4. Calls `onToggle`, then dispatches the bubbling `readmore:toggle` event.
+1. Unless the toggle is a no-op, calls `onBeforeToggle`, then dispatches the cancelable `readmore:beforetoggle` event.
+   If either cancels, nothing below happens.
+2. Flips the classes: `readmore-clamp` (and `readmore-clamp--height`) go away when expanded, `expandedClass` comes in.
+3. Updates the button's text, `aria-expanded` and `aria-label`.
+4. Starts the transient class, `openingClass` or `closingClass`, for the length of the element's longest transition.
+5. Calls `onToggle`, then dispatches the bubbling `readmore:toggle` event.
 
 The transient class is cleared by a timer, not by `transitionend`: that event never fires when no declared property
 actually changes, as with `transition: all` in lines mode. When the timer ends, the overflow is checked again.
