@@ -14,7 +14,8 @@ permissions:
 jobs:
   test:
     name: Tests (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
 
     # Every version the published `engines` field promises. fail-fast is off so
     # a break on one version still reports the others.
@@ -69,6 +70,13 @@ jobs:
         run: npm run test:coverage
 
       # Real-browser tests don't depend on the Node version either.
+      - name: Cache Playwright browsers
+        if: matrix.node == 24
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install Playwright browsers
         if: matrix.node == 24
         run: npx playwright install --with-deps chromium firefox webkit
@@ -87,7 +95,8 @@ jobs:
           reporter: java-junit
 
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
     needs: test
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta') }}
 
@@ -106,7 +115,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install Dependencies
