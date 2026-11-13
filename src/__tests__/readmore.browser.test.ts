@@ -173,7 +173,8 @@ describe('ReadMore in a real browser', () => {
         });
 
         rm.toggle();
-        expect(el.clientHeight).toBe(el.scrollHeight);
+        // Firefox on Linux reports a scrollHeight 1px above the box.
+        expect(Math.abs(el.clientHeight - el.scrollHeight)).toBeLessThanOrEqual(1);
         expect(el.clientHeight).toBeGreaterThan(2 * LINE_HEIGHT);
 
         rm.toggle();
@@ -270,7 +271,7 @@ describe('ReadMore in a real browser', () => {
 
         rm.toggle();
         await wait(250);
-        expect(el.clientHeight).toBe(full);
+        expect(Math.abs(el.clientHeight - full)).toBeLessThanOrEqual(1);
     });
 
     it('scrolls the element back into view on collapse with scrollOnCollapse', () => {
