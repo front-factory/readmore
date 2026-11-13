@@ -8,7 +8,10 @@ Rules of the Brigade setup of this web project. Work is split between three role
 - **`implementer`** (Sonnet): development only.
 - **`git-operator`** (Haiku): git only, once the work is done.
 
-A brief to a subagent states the goal, the branch, the relevant files, the constraints and what "done" means.
+A brief to a subagent states the goal, the branch, the relevant files (with lines or symbols when known), the constraints and what "done" means.
+
+- To follow up on a subagent's report (a fix, a next step), continue the same agent with `SendMessage` instead of starting a new one: it keeps its context.
+- Verify a subagent's work with a targeted `git diff`, not by re-reading whole files: check it against the brief's "done" and constraints, then for quality (duplication, naming, edge cases, security), and send any gap back to the same agent with `SendMessage`.
 
 ## Git
 
@@ -16,20 +19,31 @@ A brief to a subagent states the goal, the branch, the relevant files, the const
 - Check the current branch before any code.
 - Before any code, judge whether the request is a feature (several steps, sessions or files). Small work stays silent and ends with a commit on the current branch. If it looks like a feature, propose it in 1-2 lines and wait for the answer; invoke the skill `feature` only once the user accepts, or when pausing, handing off, ending, resuming or finishing a feature.
 - When the work is finished and its open questions are settled, propose the commit in one sentence. Never call `git-operator` without the user's go. The user can ask for a commit at any moment.
-- The feature file (see skill `feature`) is shared and travels with the branch. `implementer` updates it at important steps; mention it in the `git-operator` brief so it goes in the same commit.
+- The feature file (see skill `feature`) is shared and travels with the branch. `implementer` ticks each step once done; mention it in the `git-operator` brief so it goes in the same commit.
 - Pushing needs the user's confirmation. At the end of a session, or on pause/handoff, if commits are not pushed, propose the push in one sentence: without a push nothing survives.
 - Commit format, for `git-operator`: the one in `.claude/rules/brigade-options.md`.
 
 ## Rules
 
-- At the start of a session, read `.claude/context/decisions.md` (team decisions, shared).
+- At the start of a session, read `.claude/context/decisions.md` (team decisions, shared). Before the first coding task, invoke the skill `session-start`.
 - Keep changes small and focused.
 - Use the project's package manager, given in `.claude/rules/brigade-options.md`.
 - Run lint, build or tests only when the user asks or the task needs them. Do not assume they exist.
 - Never read or write secrets (`.env*`, keys, tokens).
 - Say so before adding a dependency.
 - Validate input on the server side. Never log sensitive data.
+- On a bug, a failing test or build, or unexpected behavior, invoke the skill `debug` before proposing or briefing a fix.
 - When you are about to report findings (two or more problems) from reviewing existing code, invoke the skill `audit` and have the audit file written before replying or fixing anything.
+
+## Replies
+
+These apply to chat only. Persisted text (code, comments, commits, docs, audits, feature files) and briefs to subagents stay in plain prose.
+
+- Answer first. No preamble announcing what you will do, no closing recap or offer of help.
+- Keep paths, numbers, commands, error messages and code exactly as they are. Never drop a negation (not, never, no, only, except).
+- When showing code changes, show only the changed lines with one or two lines of context, not the whole file.
+- Write full sentences for security warnings, irreversible actions, step-by-step orders and questions to the user.
+- Write no text between routine tool calls: one line before a multi-step run, one line with the result.
 
 ## Languages
 

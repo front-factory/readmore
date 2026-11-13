@@ -14,7 +14,9 @@
             "Bash(git diff:*)",
             "Bash(git log:*)",
             "Bash(git show:*)",
-            "Bash(npm run:*)"
+            "Bash(npm run:*)",
+            "Bash(npm test:*)",
+            "Bash(npm install:*)"
         ],
         "deny": [
             "Bash(git push *)",
@@ -57,7 +59,7 @@
             "Bash(git rebase:*)"
         ]
     },
-    "model": "opusplan",
+    "model": "opus",
     "effortLevel": "medium",
     "language": "French",
     "statusLine": {

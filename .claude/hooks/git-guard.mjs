@@ -6,64 +6,16 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const READ = new Set([
-    'status',
-    'diff',
-    'log',
-    'show',
-    'blame',
-    'rev-parse',
-    'ls-files',
-    'ls-tree',
-    'grep',
-    'describe',
-    'shortlog',
-    'cat-file',
-    'merge-base',
-    'rev-list',
-    'for-each-ref',
-    'show-ref',
-    'ls-remote',
-    'fetch'
-]);
+const words = (list) => new Set(list.split(' '));
 
-const ASK = new Set([
-    'push',
-    'merge',
-    'rebase'
-]);
-
-const ON_PROTECTED = new Set([
-    'commit',
-    'cherry-pick',
-    'revert',
-    'am',
-    'pull',
-    'reset',
-    'rm'
-]);
+const READ = words('status diff log show blame rev-parse ls-files ls-tree grep describe shortlog cat-file merge-base rev-list for-each-ref show-ref ls-remote fetch check-ignore check-attr check-ref-format diff-tree diff-index diff-files name-rev cherry range-diff whatchanged help version var count-objects verify-commit verify-tag');
+const ASK = words('push merge rebase');
+const ON_PROTECTED = words('commit cherry-pick revert am pull reset rm');
 
 // Known safe writes for git-operator; any other write subcommand (aliases included) is asked.
 const SAFE = new Set([
-    'add',
-    'commit',
-    'restore',
-    'switch',
-    'checkout',
-    'branch',
-    'tag',
-    'stash',
-    'mv',
-    'rm',
-    'cherry-pick',
-    'revert',
-    'am',
-    'pull',
-    'reset',
-    'init',
-    'clone',
-    'submodule',
-    'notes'
+    ...ON_PROTECTED,
+    ...words('add restore switch checkout branch tag stash mv init clone submodule notes')
 ]);
 
 const RANK = {
@@ -92,10 +44,122 @@ const VALUED_OPTIONS = new Set([
 ]);
 const SHELL_ARG = '("(?:[^"\\\\]|\\\\.)*"|\'[^\']*\'|[^;&|\\n]+)';
 
-// Text run by `$(...)`, backticks, `sh -c` and `eval`, taken before strip() blanks quotes.
-function nestedTexts(command) {
+// Heredoc bodies are data, not commands: cut them out before any parsing.
+// An unquoted delimiter (`<<EOF`) still runs `$(...)` and backticks in its body: those bodies are returned apart.
+// Only `<<` in code counts: not in quotes, not in `$((...))`, but yes in a `$(...)` inside double quotes.
+function heredocs(command) {
+    const bodies = [];
+    const pending = [];
+
+    const stack = [
+        {
+            kind: 'code',
+            depth: 0
+        }
+    ];
+    let text = '';
+
+    for (let i = 0; i < command.length; i++) {
+        const char = command[i];
+        const top = stack[stack.length - 1];
+
+        text += char;
+
+        if (char === '\n' && pending.length > 0) {
+            let at = i + 1;
+
+            for (const { dash, quote, word } of pending) {
+                const body = [];
+
+                while (at < command.length) {
+                    const end = command.indexOf('\n', at) === -1 ? command.length : command.indexOf('\n', at);
+                    const line = command.slice(at, end);
+
+                    at = end + 1;
+
+                    if ((dash ? line.replace(/^\t+/, '') : line) === word) {
+                        break;
+                    }
+
+                    body.push(line);
+                }
+
+                if (!quote) {
+                    bodies.push(body.join('\n'));
+                }
+            }
+
+            pending.length = 0;
+            i = at - 1;
+        } else if (char === '\\' && top.kind !== 'arith') {
+            text += command[i + 1] ?? '';
+            i++;
+        } else if (top.kind === 'arith') {
+            top.depth += char === '(' ? 1 : char === ')' ? -1 : 0;
+
+            if (top.depth === 0) {
+                stack.pop();
+            }
+        } else if (char === '$' && command[i + 1] === '(') {
+            const arith = command[i + 2] === '(';
+
+            stack.push({
+                kind: arith ? 'arith' : 'code',
+                depth: arith ? 2 : 1
+            });
+
+            text += arith ? '((' : '(';
+            i += arith ? 2 : 1;
+        } else if (top.kind === 'dq') {
+            if (char === '"') {
+                stack.pop();
+            }
+        } else if (char === '"') {
+            stack.push({
+                kind: 'dq'
+            });
+        } else if (char === '\'') {
+            const end = command.indexOf('\'', i + 1) === -1 ? command.length - 1 : command.indexOf('\'', i + 1);
+
+            text += command.slice(i + 1, end + 1);
+            i = end;
+        } else if (char === '(') {
+            top.depth++;
+        } else if (char === ')') {
+            top.depth--;
+
+            if (top.depth === 0 && stack.length > 1) {
+                stack.pop();
+            }
+        } else if (char === '<' && command[i + 1] === '<' && command[i - 1] !== '<' && command[i + 2] !== '<') {
+            const [
+                , dash,
+                quote,
+                word
+            ] = command.slice(i + 2).match(/^(-?)[ \t]*(["']?)([\w-]+)\2/) ?? [];
+
+            if (word) {
+                pending.push({
+                    dash,
+                    quote,
+                    word
+                });
+            }
+
+            text += '<';
+            i++;
+        }
+    }
+
+    return {
+        text,
+        bodies
+    };
+}
+
+// Text run by `$(...)` and backticks, taken before strip() blanks quotes.
+function substitutions(command) {
     const texts = [];
-    const unquote = (arg) => (/^["']/.test(arg) ? arg.slice(1, -1).replace(/\\"/g, '"') : arg);
     const bare = command.replace(/'[^']*'/g, '\'\'');
 
     for (let at = bare.indexOf('$('); at !== -1; at = bare.indexOf('$(', at + 2)) {
@@ -115,15 +179,17 @@ function nestedTexts(command) {
         texts.push(inner);
     }
 
-    for (const [
-        , arg
-    ] of command.matchAll(new RegExp(`\\b(?:ba|z|da)?sh\\s+(?:-\\w+\\s+)*-\\w*c\\s+${SHELL_ARG}`, 'g'))) {
-        texts.push(unquote(arg));
-    }
+    return texts;
+}
+
+// Text run by `$(...)`, backticks, `sh -c` and `eval`, taken before strip() blanks quotes.
+function nestedTexts(command) {
+    const texts = substitutions(command);
+    const unquote = (arg) => (/^["']/.test(arg) ? arg.slice(1, -1).replace(/\\"/g, '"') : arg);
 
     for (const [
         , arg
-    ] of command.matchAll(new RegExp(`\\beval\\s+${SHELL_ARG}`, 'g'))) {
+    ] of command.matchAll(new RegExp(`\\b(?:(?:ba|z|da)?sh\\s+(?:-\\w+\\s+)*-\\w*c|eval)\\s+${SHELL_ARG}`, 'g'))) {
         texts.push(unquote(arg));
     }
 
@@ -139,8 +205,8 @@ function parseGit(text) {
         i += VALUED_OPTIONS.has(tokens[i]) ? 2 : 1;
     }
 
-    // A subcommand built at run time (`$(...)`, `$SUB`, backticks) cannot be analysed.
-    if (/^[$`]/.test(tokens[i] ?? '')) {
+    // A subcommand built at run time (`$(...)`, `$SUB`, backticks) or quoted (blanked by strip()) cannot be analysed.
+    if (/^[$`"]/.test(tokens[i] ?? '')) {
         return UNKNOWN;
     }
 
@@ -155,7 +221,7 @@ function parseGit(text) {
 }
 
 // Grouping, keywords and wrapper commands that may come before `git` in a segment.
-const LEADING = /^(?:[(!]|\{(?=\s)|(?:then|else|elif|do|if|while|until)\b|env\s+(?:(?:-u\s+\S+|-\S+|\w+=\S+)\s+)*|(?:command|exec|time|nohup|nice|sudo)\s+(?:(?:-n\s+\d+|-\S+)\s+)*|\w+=\S+\s+)\s*/;
+const LEADING = /^(?:[(!]|\{(?=\s)|(?:then|else|elif|do|if|while|until)\b|env\s+(?:(?:-u\s+\S+|-\S+|\w+=\S+)\s+)*|(?:command|exec|time|nohup|nice|sudo)\s+(?:(?:-n\s+\d+|-\S+)\s+)*|timeout\s+(?:(?:-[ks]\s+\S+|--(?:kill-after|signal)\s+\S+|-\S+)\s+)*\d[\w.]*\s+|stdbuf\s+(?:(?:-[ioe]\s+\S+|-\S+)\s+)*|\w+=\S+\s+)\s*/;
 
 function gitSegment(segment) {
     let text = segment.trim();
@@ -174,15 +240,20 @@ function gitCommands(command, depth = 0) {
         ] : [];
     }
 
-    const nested = nestedTexts(command).flatMap((text) => gitCommands(text, depth + 1));
+    const { text, bodies } = heredocs(command);
 
-    const direct = strip(command)
-        .split(/&&|\|\||;|\||\n|[()]/)
+    const nested = [
+        ...nestedTexts(text),
+        ...bodies.flatMap(substitutions)
+    ].flatMap((nestedText) => gitCommands(nestedText, depth + 1));
+
+    const direct = strip(text)
+        .split(/&&|\|\||;|\||\n|[()]|(?<![>&<])&(?![>&])/)
         .map(gitSegment)
         .filter(Boolean)
         .map(([
-            , text
-        ]) => parseGit(text ?? ''))
+            , args
+        ]) => parseGit(args ?? ''))
         .filter(Boolean);
 
     return [
@@ -191,6 +262,61 @@ function gitCommands(command, depth = 0) {
     ];
 }
 
+// `git config`: a read is a listing, a `--get*` or a single key. Anything else, or anything unclear, is a write.
+function configWrites(rest) {
+    const tokens = rest.split(/\s+/).filter(Boolean);
+
+    const valued = new Set([
+        '--file',
+        '-f',
+        '--blob',
+        '--type',
+        '--default'
+    ]);
+    const positional = [];
+
+    for (let i = 0; i < tokens.length; i++) {
+        if (valued.has(tokens[i])) {
+            i++;
+        } else if (!tokens[i].startsWith('-')) {
+            positional.push(tokens[i]);
+        }
+    }
+
+    if (tokens.some((token) => /^(--unset(-all)?|--add|--replace-all|--edit|-e|--rename-section|--remove-section)$/.test(token))
+        || /^(set|unset|edit|rename-section|remove-section)$/.test(positional[0] ?? '')) {
+        return true;
+    }
+
+    if (tokens.some((token) => /^(--get[\w-]*|--list|-l)$/.test(token)) || /^(get|list)$/.test(positional[0] ?? '')) {
+        return false;
+    }
+
+    return positional.length !== 1;
+}
+
+// `git symbolic-ref`: reading one name; two names (set) or a delete is a write.
+function symbolicRefWrites(rest) {
+    const tokens = rest.split(/\s+/).filter(Boolean);
+
+    return tokens.some((token) => token.startsWith('-') && !/^(-q|--quiet|--short|--recurse|--no-recurse)$/.test(token))
+        || tokens.filter((token) => !token.startsWith('-')).length !== 1;
+}
+
+// True when `rest` holds one of the flags (a regex source), as a whole word.
+const flag = (rest, names, end = '\\s|$') => new RegExp(`(^|\\s)(${names})(${end})`).test(rest);
+
+// `rest` without the separate-token value of `--sort <key>` / `--format <fmt>`, which is not a name.
+const withoutListValues = (rest) => rest.replace(/(^|\s)--(sort|format)\s+\S+/g, '$1');
+
+// Subcommands read when their arguments match; any other form is a write.
+const READ_FORMS = {
+    reflog: /^(?!(expire|delete)\b)/,
+    remote: /^((-v|--verbose)?\s*$|(get-url|show)\b)/,
+    worktree: /^list\b/,
+    stash: /^(list|show)\b/
+};
+
 // `git branch`, `tag`, `remote`... only read when listing: no mutating flag, no name to create.
 function writes({ sub, rest }) {
     if (READ.has(sub)) {
@@ -198,35 +324,31 @@ function writes({ sub, rest }) {
     }
 
     if (sub === 'branch') {
-        if (/(^|\s)(-\w*[dDmMcCuft]\w*|--delete|--move|--copy|--force|--track|--set-upstream-to|--unset-upstream|--edit-description)(\s|=|$)/.test(rest)) {
+        if (flag(rest, '-\\w*[dDmMcCuft]\\w*|--delete|--move|--copy|--force|--track|--set-upstream-to|--unset-upstream|--edit-description', '\\s|=|$')) {
             return true;
         }
 
-        return !/(^|\s)(-l|-a|-r|-v+|--list|--all|--remotes|--verbose|--show-current|--contains|--merged|--no-merged|--points-at)(\s|$)/.test(rest) && /(^|\s)[^-\s]/.test(rest);
+        return !flag(rest, '-l|-a|-r|-v+|--list|--all|--remotes|--verbose|--show-current|--contains|--merged|--no-merged|--points-at') && /(^|\s)[^-\s]/.test(withoutListValues(rest));
     }
 
     if (sub === 'tag') {
-        if (/(^|\s)(-\w*[dasfumF]\w*|--delete|--annotate|--sign|--force|--local-user|--message|--file)(\s|$)/.test(rest)) {
+        if (flag(rest, '-\\w*[dasfumF]\\w*|--delete|--annotate|--sign|--force|--local-user|--message|--file')) {
             return true;
         }
 
-        return rest !== '' && !/(^|\s)(-l|-n\d*|--list|--contains|--points-at|--merged|--no-merged)(\s|$)/.test(rest);
+        return !flag(rest, '-l|-n\\d*|--list|--contains|--points-at|--merged|--no-merged') && /(^|\s)[^-\s]/.test(withoutListValues(rest));
     }
 
-    if (sub === 'reflog') {
-        return /^(expire|delete)\b/.test(rest);
-    }
-
-    if (sub === 'remote') {
-        return !/^(-v|--verbose)?\s*$/.test(rest);
+    if (Object.hasOwn(READ_FORMS, sub)) {
+        return !READ_FORMS[sub].test(rest);
     }
 
     if (sub === 'config') {
-        return !/(^|\s)(--get|--list|-l)\b/.test(rest);
+        return configWrites(rest);
     }
 
-    if (sub === 'stash') {
-        return !/^list\b/.test(rest);
+    if (sub === 'symbolic-ref') {
+        return symbolicRefWrites(rest);
     }
 
     return true;
@@ -238,19 +360,35 @@ function destructive({ sub, rest }) {
         || (sub === 'clean' && /(^|\s)-\w*f/.test(rest))
         || (sub === 'branch' && /(^|\s)-D\b/.test(rest))
         // Commands that destroy uncommitted work.
-        || (sub === 'checkout' && /(^|\s)(--|-f|--force|\.)(\s|$)/.test(rest))
-        || (sub === 'restore' && (!/(^|\s)(--staged|-S)(\s|$)/.test(rest) || /(^|\s)(--worktree|-W)(\s|$)/.test(rest)))
-        || (sub === 'switch' && /(^|\s)(--discard-changes|-f|--force)(\s|$)/.test(rest))
+        || (sub === 'checkout' && flag(rest, '--|-f|--force|\\.'))
+        || (sub === 'restore' && (!flag(rest, '--staged|-S') || flag(rest, '--worktree|-W')))
+        || (sub === 'switch' && flag(rest, '--discard-changes|-f|--force'))
         || (sub === 'stash' && /^(drop|clear)\b/.test(rest))
         // Commands that delete refs or history for good.
-        || (sub === 'tag' && /(^|\s)(-\w*d\w*|--delete)(\s|$)/.test(rest))
+        || (sub === 'tag' && flag(rest, '-\\w*d\\w*|--delete'))
         || (sub === 'update-ref' && /(^|\s)-d\b/.test(rest))
         || sub === 'filter-branch'
         || (sub === 'reflog' && /^(expire|delete)\b/.test(rest))
         || (sub === 'gc' && /--prune/.test(rest));
 }
 
-export function decide({ command, agent, branch, protectedBranches }) {
+// Branches the next commands may write on after a `switch` or `checkout`: the created branch, otherwise null (unknown).
+// A plain `switch` or `checkout <x>` is not followed (`x` may be a file), and a name that cannot be read (`$VAR`, `-`...) is unknown too.
+function branchesAfter({ sub, rest }, branches) {
+    if (sub !== 'switch' && sub !== 'checkout') {
+        return branches;
+    }
+
+    const tokens = rest.split(/\s+/).filter(Boolean);
+    const create = tokens.findIndex((token) => (sub === 'switch' ? /^(-[cC]|--(force-)?create|--orphan)$/ : /^(-[bB]|--orphan)$/).test(token));
+    const name = tokens[create + 1] ?? '';
+
+    return create === -1 || /^$|^-|[$`"'*?[\\]/.test(name) ? null : [
+        name
+    ];
+}
+
+export function decide({ command, agent, branch: initial, protectedBranches }) {
     let decision = {
         permissionDecision: 'allow',
         reason: ''
@@ -271,7 +409,17 @@ export function decide({ command, agent, branch, protectedBranches }) {
         return null;
     }
 
+    // The commands run in order: a `switch` changes the branch the next ones write on.
+    let branches = [
+        initial
+    ];
+
     for (const git of found) {
+        const here = branches;
+        const hit = here?.find((name) => protectedBranches?.includes(name));
+
+        branches = branchesAfter(git, branches);
+
         if (agent !== 'git-operator') {
             raise('deny', 'Only git-operator writes to git: delegate to it, after the user\'s go.');
         } else if (destructive(git)) {
@@ -280,14 +428,14 @@ export function decide({ command, agent, branch, protectedBranches }) {
             raise('ask', 'Nested git command that cannot be analysed: confirm.');
         } else if (ASK.has(git.sub)) {
             raise('ask', `git ${git.sub} always needs the user's confirmation.`);
-        } else if (git.sub === 'tag' && /(^|\s)(-\w*f\w*|--force)(\s|$)/.test(git.rest)) {
-            raise('ask', 'git tag --force moves an existing tag: confirm.');
-        } else if (git.sub === 'branch' && /(^|\s)(-\w*f\w*|--force)(\s|$)/.test(git.rest)) {
-            raise('ask', 'git branch --force moves an existing branch: confirm.');
+        } else if ((git.sub === 'tag' || git.sub === 'branch') && flag(git.rest, '-\\w*f\\w*|--force')) {
+            raise('ask', `git ${git.sub} --force moves an existing ${git.sub}: confirm.`);
         } else if (ON_PROTECTED.has(git.sub) && protectedBranches === null) {
             raise('ask', 'Protected branches unknown (.claude/brigade.json missing or invalid): confirm.');
-        } else if (ON_PROTECTED.has(git.sub) && protectedBranches.includes(branch)) {
-            raise('ask', `"${branch}" is a protected branch: confirm before writing on it.`);
+        } else if (ON_PROTECTED.has(git.sub) && here === null) {
+            raise('ask', 'Branch unknown after a switch or checkout that cannot be analysed: confirm.');
+        } else if (ON_PROTECTED.has(git.sub) && hit !== undefined) {
+            raise('ask', `"${hit}" is a protected branch: confirm before writing on it.`);
         } else if (!SAFE.has(git.sub)) {
             raise('ask', `git ${git.sub}: not in the known safe list, confirm.`);
         } else {
@@ -334,20 +482,16 @@ export function protectedBranches(root, env = process.env) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-    let input;
+    let parsed;
 
     try {
-        input = JSON.parse(readFileSync(0, 'utf8'));
+        parsed = JSON.parse(readFileSync(0, 'utf8'));
     } catch {
-        input = null;
+        parsed = null;
     }
 
-    const valid = input !== null && typeof input === 'object' && !Array.isArray(input);
-
-    if (!valid) {
-        input = {};
-    }
-
+    const valid = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed);
+    const input = valid ? parsed : {};
     const root = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
 
     // An unreadable payload must not crash the hook (exit 1 lets the command through).
