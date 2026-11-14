@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.0](https://github.com/front-factory/readmore/compare/v1.6.0...v1.7.0) (2026-11-14)
+
+### Features
+
+* add threshold, function values and cancelable toggle ([f332737](https://github.com/front-factory/readmore/commit/f33273731f0011f1f2f972c355600a51c7b34a12))
+
 ## [1.6.0](https://github.com/front-factory/readmore/compare/v1.5.1...v1.6.0) (2026-11-04)
 
 ### Features
