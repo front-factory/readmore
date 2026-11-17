@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitepress';
 import baseConfig from '@frontfactory/vitepress-theme/config';
-import { version } from '../../package.json';
+import pkg from '../../package.json' with { type: 'json' };
+
+const { version, license } = pkg;
+const hostname = 'https://readmore.frontfactory.dev';
+const description = 'Clamp text to N lines or a fixed height, with an accessible read more / read less toggle.';
 
 const fontsDir = resolve(dirname(fileURLToPath(import.meta.url)), '../../node_modules/@fontsource/inter/files');
 const startYear = 2026;
@@ -13,9 +17,58 @@ export default defineConfig({
     extends: baseConfig,
     title: 'Readmore',
     titleTemplate: ':title | Readmore',
-    description: 'Clamp text to N lines or a fixed height, with an accessible read more / read less toggle.',
+    description,
+    lang: 'en-US',
     lastUpdated: false,
     cleanUrls: true,
+    sitemap: {
+        hostname
+    },
+    head: [
+        [
+            'meta',
+            {
+                name: 'twitter:card',
+                content: 'summary_large_image'
+            }
+        ],
+        [
+            'meta',
+            {
+                name: 'theme-color',
+                content: '#2745cf'
+            }
+        ]
+    ],
+    transformPageData(pageData) {
+        const path = pageData.relativePath.replace(/\.md$/, '').replace(/(^|\/)index$/, '$1');
+        const head = (pageData.frontmatter.head ??= []) as unknown[];
+
+        head.push([
+            'link',
+            {
+                rel: 'canonical',
+                href: `${hostname}/${path}`
+            }
+        ]);
+
+        if (pageData.relativePath === 'index.md') {
+            head.push([
+                'script',
+                { type: 'application/ld+json' },
+                JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'SoftwareSourceCode',
+                    name: 'Readmore',
+                    description,
+                    url: hostname,
+                    codeRepository: 'https://github.com/front-factory/readmore',
+                    programmingLanguage: 'TypeScript',
+                    license: `https://spdx.org/licenses/${license}`
+                })
+            ]);
+        }
+    },
     themeConfig: {
         nav: [
             {
