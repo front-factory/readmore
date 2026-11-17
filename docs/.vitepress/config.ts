@@ -55,7 +55,9 @@ export default defineConfig({
         if (pageData.relativePath === 'index.md') {
             head.push([
                 'script',
-                { type: 'application/ld+json' },
+                {
+                    type: 'application/ld+json'
+                },
                 JSON.stringify({
                     '@context': 'https://schema.org',
                     '@type': 'SoftwareSourceCode',
