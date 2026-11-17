@@ -153,6 +153,17 @@ export default defineConfig({
         },
         ff: {
             navOrder: 'menu-first',
+            pageActions: {
+                copyMarkdown: true,
+                copyLink: true,
+                share: [
+                    'x',
+                    'linkedin',
+                    'bluesky',
+                    'mastodon'
+                ],
+                mastodonInstance: 'mastodon.social'
+            },
             footerColumns: [
                 {
                     title: 'Guide',
