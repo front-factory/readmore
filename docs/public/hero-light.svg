@@ -1,39 +1,133 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -14 512 448" role="img" aria-label="A paragraph clamped to three lines with a Read more button, above the same paragraph expanded with a Read less button">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 448" role="img" aria-label="A paragraph clamped to three lines that expands to reveal the rest when Read more is pressed, then collapses again">
+  <style>
+    .bx,.t-less,.aria-true,.shim{opacity:0}
+    .bx{transform:translateY(6px)}
+    .ripple,.chev{transform-box:fill-box;transform-origin:center}
+    .ripple{opacity:0;transform:scale(.3)}
+    .rb,.rimb,.btn{animation:grow 4.5s infinite}
+    .overlay{animation:fade 4.5s infinite cubic-bezier(.65,0,.35,1)}
+    .t-more{animation:more 4.5s infinite cubic-bezier(.65,0,.35,1)}
+    .t-less{animation:less 4.5s infinite cubic-bezier(.65,0,.35,1)}
+    .aria-false{animation:af 4.5s infinite cubic-bezier(.65,0,.35,1)}
+    .aria-true{animation:at 4.5s infinite cubic-bezier(.65,0,.35,1)}
+    .chev{animation:rot 4.5s infinite}
+    .ripple{animation:rip 4.5s infinite cubic-bezier(.2,.7,.3,1)}
+    .shim{animation:shim 4.5s infinite cubic-bezier(.4,0,.2,1)}
+    .b1{animation:bx1 4.5s infinite}.b2{animation:bx2 4.5s infinite}.b3{animation:bx3 4.5s infinite}
+    .blob1{animation:d1 9s infinite alternate ease-in-out}
+    .blob2{animation:d2 11s infinite alternate ease-in-out}
+    .blob3{animation:d3 12s infinite alternate ease-in-out}
+    @keyframes grow{0%,33%{transform:translateY(0);animation-timing-function:cubic-bezier(.34,1.56,.64,1)}43%,83%{transform:translateY(66px);animation-timing-function:cubic-bezier(.65,0,.35,1)}93%,100%{transform:translateY(0)}}
+    @keyframes rot{0%,33%{transform:rotate(0);animation-timing-function:cubic-bezier(.34,1.56,.64,1)}43%,83%{transform:rotate(180deg);animation-timing-function:cubic-bezier(.65,0,.35,1)}93%,100%{transform:rotate(360deg)}}
+    @keyframes fade{0%,33%{opacity:1}38%,85%{opacity:0}93%,100%{opacity:1}}
+    @keyframes more{0%,33%{opacity:1}37%,85%{opacity:0}91%,100%{opacity:1}}
+    @keyframes less{0%,36%{opacity:0}41%,83%{opacity:1}87%,100%{opacity:0}}
+    @keyframes af{0%,33%{opacity:1}37%,85%{opacity:0}90%,100%{opacity:1}}
+    @keyframes at{0%,35%{opacity:0}40%,83%{opacity:1}87%,100%{opacity:0}}
+    @keyframes rip{0%,28%{transform:scale(.3);opacity:0}28.1%{transform:scale(.3);opacity:.55}33%{transform:scale(2.4);opacity:0}33.1%,78%{transform:scale(.3);opacity:0}78.1%{transform:scale(.3);opacity:.55}83%{transform:scale(2.4);opacity:0}83.1%,100%{transform:scale(.3);opacity:0}}
+    @keyframes shim{0%,37%{transform:translateX(0);opacity:0}37.1%{transform:translateX(0);opacity:1}48%{transform:translateX(380px);opacity:1}48.1%,100%{transform:translateX(380px);opacity:0}}
+    @keyframes bx1{0%,36.0%{opacity:0;transform:translateY(6px);animation-timing-function:cubic-bezier(.2,.8,.3,1)}40.5%,81.8%{opacity:1;transform:translateY(0);animation-timing-function:ease-in}84.8%,100%{opacity:0;transform:translateY(6px)}}
+    @keyframes bx2{0%,36.9%{opacity:0;transform:translateY(6px);animation-timing-function:cubic-bezier(.2,.8,.3,1)}41.4%,80.9%{opacity:1;transform:translateY(0);animation-timing-function:ease-in}83.9%,100%{opacity:0;transform:translateY(6px)}}
+    @keyframes bx3{0%,37.8%{opacity:0;transform:translateY(6px);animation-timing-function:cubic-bezier(.2,.8,.3,1)}42.3%,80.0%{opacity:1;transform:translateY(0);animation-timing-function:ease-in}83.0%,100%{opacity:0;transform:translateY(6px)}}
+    @keyframes d1{to{transform:translate(50px,30px)}}
+    @keyframes d2{to{transform:translate(-45px,35px)}}
+    @keyframes d3{to{transform:translate(30px,-40px)}}
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important } }
+  </style>
+  <defs>
+    <filter id="blur" filterUnits="userSpaceOnUse" x="-256" y="-224" width="1024" height="896">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="8" r="1" fill="#1a1917" fill-opacity="0.22"/>
+    </pattern>
+    <radialGradient id="fadeG" gradientUnits="userSpaceOnUse" cx="256" cy="224" r="250">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bgFade" gradientUnits="userSpaceOnUse" cx="256" cy="239" r="210">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="bgMask" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="448"><rect width="512" height="448" fill="url(#bgFade)"/></mask>
+    <mask id="dotMask"><rect width="512" height="448" fill="url(#fadeG)"/></mask>
+    <linearGradient id="rimG" gradientUnits="userSpaceOnUse" x1="74" y1="82" x2="438" y2="262">
+      <stop offset="0" stop-color="#2745cf"/>
+      <stop offset="0.5" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="btnG" gradientUnits="userSpaceOnUse" x1="100" y1="0" x2="224" y2="0">
+      <stop offset="0" stop-color="#2745cf"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="fadeLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="shimG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="barsClip"><rect x="100" y="140" width="300" height="8" rx="4"/><rect x="100" y="162" width="286" height="8" rx="4"/><rect x="100" y="184" width="250" height="8" rx="4"/><rect x="100" y="206" width="296" height="8" rx="4"/><rect x="100" y="228" width="270" height="8" rx="4"/><rect x="100" y="250" width="180" height="8" rx="4"/></clipPath>
+    <filter id="shadow" filterUnits="userSpaceOnUse" x="-60" y="20" width="632" height="440">
+      <feDropShadow in="SourceGraphic" dx="0" dy="12" stdDeviation="16" flood-color="#2745cf" flood-opacity="0.32" result="wide"/>
+      <feDropShadow in="SourceGraphic" dx="0" dy="4" stdDeviation="4" flood-color="#1a1917" flood-opacity="0.14" result="tight"/>
+      <feMerge><feMergeNode in="wide"/><feMergeNode in="tight"/></feMerge>
+    </filter>
+    <filter id="btnGlow" filterUnits="userSpaceOnUse" x="40" y="170" width="244" height="110">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
 
-    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11">
-        <!-- collapsed -->
-        <text x="40" y="44" fill="#8a857b" letter-spacing="1.2">01 · COLLAPSED · LINES: 3</text>
-        <rect x="40" y="58" width="400" height="128" rx="4" fill="#ffffff" stroke="#e6e2da"/>
-        <g fill="#1a1917">
-            <rect x="60" y="80" width="360" height="7" rx="3.5" opacity="0.78"/>
-            <rect x="60" y="102" width="344" height="7" rx="3.5" opacity="0.78"/>
-            <rect x="60" y="124" width="196" height="7" rx="3.5" opacity="0.78"/>
-        </g>
-        <text x="264" y="131" fill="#1a1917" font-size="14" font-weight="700">…</text>
-        <g>
-            <rect x="60" y="148" width="92" height="24" rx="3" fill="none" stroke="#2745cf"/>
-            <text x="72" y="164" fill="#2745cf" font-weight="600">Read more</text>
-        </g>
-        <text x="392" y="164" text-anchor="end" fill="#8a857b" font-size="10">aria-expanded="false"</text>
+  <g mask="url(#bgMask)">
+  <g filter="url(#blur)">
+    <circle class="blob1" cx="170" cy="170" r="120" fill="#2745cf" fill-opacity="0.4"/>
+    <circle class="blob2" cx="370" cy="230" r="110" fill="#7c3aed" fill-opacity="0.4"/>
+    <circle class="blob3" cx="280" cy="350" r="95" fill="#06b6d4" fill-opacity="0.38"/>
+  </g>
+  <rect width="512" height="448" fill="url(#dots)" mask="url(#dotMask)"/>
+  </g>
 
-        <!-- expanded -->
-        <text x="40" y="232" fill="#8a857b" letter-spacing="1.2">02 · EXPANDED</text>
-        <rect x="40" y="246" width="400" height="148" rx="4" fill="#ffffff" stroke="#2745cf"/>
-        <g fill="#1a1917">
-            <rect x="60" y="266" width="360" height="7" rx="3.5" opacity="0.78"/>
-            <rect x="60" y="284" width="344" height="7" rx="3.5" opacity="0.78"/>
-            <rect x="60" y="302" width="352" height="7" rx="3.5" opacity="0.78"/>
-            <rect x="60" y="320" width="330" height="7" rx="3.5" opacity="0.78"/>
-            <rect x="60" y="338" width="196" height="7" rx="3.5" opacity="0.78"/>
-        </g>
-        <g>
-            <rect x="60" y="356" width="88" height="24" rx="3" fill="#2745cf"/>
-            <text x="72" y="372" fill="#ffffff" font-weight="600">Read less</text>
-        </g>
-        <text x="392" y="372" text-anchor="end" fill="#8a857b" font-size="10">aria-expanded="true"</text>
+  <g transform="translate(0 30)">
+  <rect x="76" y="84" width="360" height="150" rx="16" fill="#ffffff" fill-opacity="0.5" stroke="#2745cf" stroke-opacity="0.3" transform="translate(256 159) rotate(-4) scale(0.94) translate(-256 -159) translate(0 -14)"/>
+  <g transform="rotate(-2 256 200)">
+  <g filter="url(#shadow)">
+    <rect x="74.5" y="82.5" width="363" height="153" rx="17.5" fill="url(#rimG)"/>
+    <rect class="rimb" x="74.5" y="110.5" width="363" height="153" rx="17.5" fill="url(#rimG)"/>
+    <rect x="76" y="84" width="360" height="150" rx="16" fill="#ffffff"/>
+    <rect class="rb" x="76" y="112" width="360" height="150" rx="16" fill="#ffffff"/>
+  </g>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" fill="#8a857b">
+    <rect x="100" y="94" width="62" height="20" rx="6" fill="#8a857b" fill-opacity="0.14"/>
+    <text x="131" y="108" text-anchor="middle">lines: 3</text>
+    <text class="aria-false" x="412" y="108" text-anchor="end">aria-expanded="false"</text>
+    <text class="aria-true" x="412" y="108" text-anchor="end">aria-expanded="true"</text>
+  </g>
+
+  <g fill="#1a1917" opacity="0.78">
+      <rect x="100" y="140" width="300" height="8" rx="4" fill="#0d0c0b"/>
+      <rect x="100" y="162" width="286" height="8" rx="4"/>
+      <rect x="100" y="184" width="250" height="8" rx="4"/>
+      <rect class="bx b1" x="100" y="206" width="296" height="8" rx="4"/>
+      <rect class="bx b2" x="100" y="228" width="270" height="8" rx="4"/>
+      <rect class="bx b3" x="100" y="250" width="180" height="8" rx="4"/>
+  </g>
+  <g clip-path="url(#barsClip)"><rect class="shim" x="60" y="132" width="90" height="130" fill="url(#shimG)"/></g>
+  <rect class="overlay" x="290" y="176" width="112" height="24" fill="url(#fadeLine)"/>
+
+  <g class="btn">
+    <rect x="102" y="218" width="120" height="28" rx="14" fill="#2745cf" opacity="0.55" filter="url(#btnGlow)"/>
+    <circle class="ripple" cx="162" cy="227" r="22" fill="#2745cf"/>
+    <rect x="100" y="212" width="124" height="30" rx="15" fill="url(#btnG)"/>
+    <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#ffffff" text-anchor="middle">
+      <text class="t-more" x="145" y="232">Read more</text>
+      <text class="t-less" x="145" y="232">Read less</text>
     </g>
-
-    <!-- link between the two states -->
-    <path d="M240 190 L240 226" stroke="#2745cf" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
-    <path d="M235 219 L240 226 L245 219" stroke="#2745cf" stroke-width="1.2" fill="none"/>
+    <g transform="translate(203 227)"><path class="chev" d="M-4 -2 L0 2 L4 -2" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+  </g>
+  </g>
 </svg>

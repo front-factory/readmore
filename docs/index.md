@@ -13,7 +13,7 @@ hero:
   image:
     light: /hero-light.svg
     dark: /hero-dark.svg
-    alt: A paragraph clamped to three lines with a Read more button, and the same paragraph expanded
+    alt: A paragraph clamped to three lines that expands to reveal the rest when Read more is pressed, then collapses again
   actions:
     - theme: brand
       text: Get started
