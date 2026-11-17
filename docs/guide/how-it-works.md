@@ -19,9 +19,9 @@ On creation, the element gets a class and a custom property:
 
 ## 2. Detect overflow
 
-The text overflows when its content is taller than its box: `scrollHeight - clientHeight > 1`. A difference of
-one pixel or less is ignored, so a text that fits, give or take a rounding error, gets no button. The `threshold`
-option raises that limit: the button only appears when more than `threshold` pixels are hidden.
+The text overflows when its content is taller than its box: `scrollHeight - clientHeight > max(1, threshold)`. A
+difference of one pixel or less is ignored, so a text that fits, give or take a rounding error, gets no button. The
+`threshold` option raises that limit: the button only appears when more than `threshold` pixels are hidden.
 
 ## 3. Mount the button
 
@@ -37,8 +37,8 @@ When a batch of elements is resized, they are all **measured first**, and only t
 reads and writes would force a new layout for each element; this way the whole batch costs one.
 
 `init()` follows the same rule: it measures all its elements in one pass before touching the DOM. A re-measure also runs
-once `document.fonts.ready` resolves, since web fonts change the text's size; instances created in the same tick share
-that wait.
+once `document.fonts.ready` resolves, and again on each later `document.fonts` `loadingdone` event, since web fonts
+change the text's size; instances created in the same tick share that wait.
 
 The check does not run while the text is expanded, since there is nothing to clamp, nor during a toggle transition,
 since the size is not final yet.
@@ -68,8 +68,6 @@ properties, and drops the generated `id`. The element is then ready to be initia
   or grid container, clamp an inner element instead.
 - **Several block children in lines mode.** How `-webkit-line-clamp` handles a `<div>` holding multiple `<p>` varies
   between browsers. For rich content, prefer [height mode](/guide/modes#height).
-- **Content changes are not detected.** Only size changes are observed; after a change that keeps the element's size,
-  call [`refresh()`](/guide/controlling#when-the-content-changes).
 - **Lines mode cannot be animated.** Neither `display` nor `line-clamp` can transition. See
   [Animation](/guide/animation).
 - **Same-size content changes are not detected.** Call [`refresh()`](/guide/controlling#when-the-content-changes).

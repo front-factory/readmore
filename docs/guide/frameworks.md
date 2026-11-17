@@ -23,13 +23,20 @@ import '@frontfactory/readmore/style.css';
 export function Excerpt({ children }: { children: string }) {
     const ref = useRef<HTMLParagraphElement>(null);
 
+    const instance = useRef<ReadMore>();
+
     useEffect(() => {
-        const instance = new ReadMore(ref.current!, {
+        instance.current = new ReadMore(ref.current!, {
             lines: 3
         });
 
-        return () => instance.destroy();
+        return () => instance.current?.destroy();
     }, []);
+
+    // A new text of the same height goes unnoticed by the resize observer.
+    useEffect(() => {
+        instance.current?.refresh();
+    }, [children]);
 
     return <p ref={ref}>{children}</p>;
 }
@@ -102,4 +109,5 @@ is not, since it needs an element and a browser. Do it in a client-only hook, `u
 during the render.
 
 The server-rendered text is not clamped until then, unless you add the `readmore-clamp` class yourself, together with
-`--readmore-lines`, to avoid a jump on load.
+`--readmore-lines`, to avoid a jump on load. In height mode, add `readmore-clamp` and `readmore-clamp--height`, together
+with `--readmore-height`.

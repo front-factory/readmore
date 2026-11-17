@@ -131,7 +131,7 @@ instance.el.textContent = newText;
 instance.refresh();
 ```
 
-### With a framework (React, Vue, Svelte…)
+### With a framework (React, Vue…)
 
 The instance holds a button outside the element and is watched by a `ResizeObserver`, so call `destroy()` when the
 component unmounts. By default the button is inserted as a sibling of the element, which a framework may remove or
@@ -175,7 +175,7 @@ return (
 | `onBeforeToggle`   | `(expanded: boolean, instance: ReadMore) => boolean \| void` | —                | Called before a toggle with the state about to be entered; returning `false` cancels it.                       |
 | `onToggle`         | `(expanded: boolean, instance: ReadMore) => void`            | —                | Callback fired after each toggle, before the `readmore:toggle` event (still dispatched if it throws).          |
 
-For `expandedClass`, `openingClass` and `closingClass`, an empty string falls back to the default.
+For every `*Class` option (`buttonClass`, `expandedClass`, `openingClass` and `closingClass`), an empty string falls back to the default.
 
 ## API
 
@@ -193,7 +193,9 @@ instance.destroy();     // remove button, classes, listeners and generated id; t
 ReadMore.init(target, options, root);  // target: selector | element | iterable of elements — returns ReadMore[], reusing existing instances
 ReadMore.getInstance(element);         // returns the ReadMore bound to an element, or undefined
 
-// event: 'readmore:toggle' (bubbles) — event.detail: { expanded, instance }
+// events (both typed in HTMLElementEventMap / DocumentEventMap), event.detail: { expanded, instance }
+//   'readmore:beforetoggle' (bubbles, cancelable) — before a toggle; preventDefault() cancels it
+//   'readmore:toggle' (bubbles) — after a toggle
 ```
 
 ### Errors

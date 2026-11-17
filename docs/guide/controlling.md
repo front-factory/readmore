@@ -25,8 +25,9 @@ collapseAll.addEventListener('click', () => {
 });
 ```
 
-Only a real boolean forces the state, so `toggle` still works as a plain event listener:
-`button.addEventListener('click', () => instance.toggle())`.
+Only a real boolean forces the state, so `toggle` still works as a plain event listener. The listener receives the
+click event as its first argument, which is ignored because it is not a boolean:
+`button.addEventListener('click', instance.toggle.bind(instance))`.
 
 ## Reacting to a toggle
 
@@ -97,7 +98,8 @@ instance?.toggle(true);
 Size changes are tracked for you: a single `ResizeObserver` watches every clamped element and mounts or removes the
 button as the text starts or stops overflowing.
 
-The clamp is also measured again once `document.fonts.ready` resolves, so web fonts that finish loading are handled.
+The clamp is also measured again once `document.fonts.ready` resolves, and on every later `document.fonts`
+`loadingdone` event, so web fonts that finish loading at any time are handled.
 
 A change that keeps the element's size is invisible to it. Swap the text for another one of the same height and nothing
 tells the plugin. Call `refresh()` to check again:
@@ -131,7 +133,7 @@ instance.destroy();
 ReadMore.init(instance.el, { lines: 5 });
 ```
 
-`destroy()` restores the element: it removes the button, the classes, the two custom properties, the listeners, and the
+`destroy()` restores the element: it removes the button, the classes, the three custom properties (`--readmore-lines`, `--readmore-height` and `--readmore-full-height`), the listeners, and the
 `id` if the plugin generated it. An `id` you set yourself is never touched. Calling it again does nothing, and
 `toggle()` is a no-op afterwards.
 

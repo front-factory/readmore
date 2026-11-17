@@ -14,7 +14,8 @@ import '@frontfactory/readmore/style.css';
 
 ## Options
 
-Every option is optional. An option explicitly set to `undefined` falls back to its default.
+Every option is optional. An option explicitly set to `undefined` falls back to its default, and so does an empty string
+for any `*Class` option (`buttonClass`, `expandedClass`, `openingClass`, `closingClass`).
 
 | Option             | Type                                                         | Default          | Description                                                                                                    |
 |--------------------|--------------------------------------------------------------|------------------|----------------------------------------------------------------------------------------------------------------|
@@ -133,8 +134,8 @@ It does nothing while the text is expanded, during a toggle transition, or once 
 
 <Api name="destroy()" kind="method" signature="destroy(): void">
 
-Restores the element: it removes the button, the classes, the `--readmore-lines` and `--readmore-height` properties, the
-listeners and the generated `id`. The element can then be initialized again.
+Restores the element: it removes the button, the classes, the `--readmore-lines`, `--readmore-height` and
+`--readmore-full-height` properties, the listeners and the generated `id`. The element can then be initialized again.
 
 Calling it again does nothing, and `toggle()` is a no-op afterwards.
 
@@ -179,7 +180,8 @@ document.addEventListener('readmore:toggle', (event) => {
 });
 ```
 
-The event is typed on `HTMLElement` and on `document` as soon as the package is imported.
+The event, like `readmore:beforetoggle`, is typed in `HTMLElementEventMap` and `DocumentEventMap` as soon as the package
+is imported.
 
 </Api>
 
@@ -198,9 +200,10 @@ the first element it cannot initialize. It never throws the `Error`, since it re
 
 | Error        | When                                                                                                                   |
 |--------------|------------------------------------------------------------------------------------------------------------------------|
-| `TypeError`  | `element` or `buttonContainer` is not an `HTMLElement`.                                                                |
+| `TypeError`  | `element` or `buttonContainer` is not an `HTMLElement`, or there is no DOM at all, e.g. during SSR.                    |
 | `Error`      | The element is already initialized. Call `destroy()` before re-initializing.                                           |
 | `RangeError` | `lines` is not an integer `>= 1`, `height` is not a finite number `> 0`, or `threshold` is not a finite number `>= 0`. |
+| `RangeError` | `expandedClass`, `openingClass` or `closingClass` is not a string or contains whitespace. The message is `ReadMore: <option> must be a string without whitespace.` |
 
 `lines`, `height` and `threshold` also accept numeric strings such as `'3'` (e.g. read from a `data-*` attribute); blank or non-numeric strings throw a `RangeError`.
 

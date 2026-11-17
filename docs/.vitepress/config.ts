@@ -81,6 +81,10 @@ export default defineConfig({
                     {
                         text: 'API',
                         link: '/api/'
+                    },
+                    {
+                        text: 'Changelog',
+                        link: 'https://github.com/front-factory/readmore/blob/main/CHANGELOG.md'
                     }
                 ]
             }
